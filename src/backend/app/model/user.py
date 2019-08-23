@@ -12,7 +12,7 @@ from app import db
 
 class User(db.Model):
     __table__name = 'user'
-    __table_args__ = {"useexisting": True, 'comment': '用户表'}
+    __table_args__ = {"extend_existing": True, 'comment': '用户表'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(32), unique=True, index=True, nullable=False, comment='用户名')
     password = db.Column(db.String(128), nullable=False, comment='密码')
@@ -30,7 +30,7 @@ class User(db.Model):
 
 class Role(db.Model):
     __table__name = 'role'
-    __table_args__ = {"useexisting": True, 'comment': '角色表'}
+    __table_args__ = {"extend_existing": True, 'comment': '角色表'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(20), index=True, nullable=False, comment='角色名')
     desc = db.Column(db.String(20), comment='描述')
@@ -51,10 +51,10 @@ User_Role = db.Table("user_role",
 
 class Permission(db.Model):
     __table__name = 'permission'
-    __table_args__ = {"useexisting": True, 'comment': '权限表'}
+    __table_args__ = {"extend_existing": True, 'comment': '权限表'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     path = db.Column(db.String(200), index=True, nullable=False, comment='权限路径')
-    name = db.Column(db.String(20), nullable=False, comment='权限名称')
+    name = db.Column(db.String(20), comment='权限名')
     desc = db.Column(db.String(20), comment='描述')
     create_time = db.Column(db.DateTime(), default=datetime.datetime.now, comment='创建时间')
     update_time = db.Column(db.DateTime(), default=datetime.datetime.now, onupdate=datetime.datetime.now,
