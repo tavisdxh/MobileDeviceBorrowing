@@ -95,6 +95,19 @@ def test_login_successfully(login_url, setup_add_user):
     assert result.json()['data']['access_token']
 
 
+def test_login_disable_user(login_url, setup_add_user):
+    session = get_db_session()
+    user = session.query(User).filter_by(username='username_tavisd').first()
+    user.status = 0
+    session.add(user)
+    session.commit()
+    data = {"username": "username_tavisd",
+            "password": "1234"}
+    result = requests.post(login_url, data)
+    assert result.json()['code'] == 2002
+    assert result.json()['msg'] == "用户已被禁用"
+
+
 @pytest.mark.parametrize("username,password", [
     ("username_tavisd", "12345"),
     ("username_tavis", "1234"),

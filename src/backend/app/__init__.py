@@ -39,6 +39,8 @@ def create_app(config_name):
 
     # 注册蓝图
     from app.api.auth.auth import auth_bp
+    from app.api.user.user import user_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(user_bp, url_prefix='/api/user')
 
     return app

@@ -11,7 +11,7 @@
  Target Server Version : 50726
  File Encoding         : 65001
 
- Date: 22/08/2019 17:56:12
+ Date: 24/08/2019 12:18:23
 */
 
 SET NAMES utf8mb4;
@@ -27,19 +27,29 @@ CREATE TABLE `alembic_version`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Records of alembic_version
+-- ----------------------------
+INSERT INTO `alembic_version` VALUES ('2b4355d4395f');
+
+-- ----------------------------
 -- Table structure for permission
 -- ----------------------------
 DROP TABLE IF EXISTS `permission`;
 CREATE TABLE `permission`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `path` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '权限路径',
-  `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '权限名称',
-  `desc` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '描述',
+  `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '权限名',
+  `desc` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '描述',
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `ix_permission_path`(`path`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '权限表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of permission
+-- ----------------------------
+INSERT INTO `permission` VALUES (1, 'user_get_user', '', NULL, '2019-08-22 18:35:47', NULL);
 
 -- ----------------------------
 -- Table structure for role
@@ -48,7 +58,7 @@ DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '角色名',
-  `desc` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '描述',
+  `desc` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '描述',
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -83,19 +93,21 @@ CREATE TABLE `user`  (
   `username` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
   `password` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '密码',
   `realname` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '真实姓名',
-  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '邮箱',
+  `email` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '邮箱',
   `status` int(11) NULL DEFAULT NULL COMMENT '状态，1：启用，0：禁用',
   `create_time` datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime(0) NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `ix_user_username`(`username`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
 INSERT INTO `user` VALUES (1, 'admin', 'admin', '超级管理员', 'admin@admin.com', 1, '2019-08-22 16:25:16', NULL);
 INSERT INTO `user` VALUES (5, 'test1', '1234', '真实姓名1', '11@qq.com', 1, '2019-08-22 17:39:10', '2019-08-22 17:39:10');
+INSERT INTO `user` VALUES (10, 'test_tavisd', '1234', 'TavisD', 'test@tavisd.com', 1, '2019-08-23 12:04:16', '2019-08-23 12:04:16');
+INSERT INTO `user` VALUES (19, 'username_tavisd', '1234', 'TavisD', 'test@tavisd.com', 0, '2019-08-23 14:34:13', '2019-08-23 14:34:14');
 
 -- ----------------------------
 -- Table structure for user_role
@@ -115,5 +127,7 @@ CREATE TABLE `user_role`  (
 -- ----------------------------
 INSERT INTO `user_role` VALUES (1, 1);
 INSERT INTO `user_role` VALUES (5, 2);
+INSERT INTO `user_role` VALUES (10, 2);
+INSERT INTO `user_role` VALUES (19, 2);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -41,7 +41,7 @@ class Config:
     REDIS_HOST = os.environ.get('REDIS_HOST') or '127.0.0.1'
     REDIS_URL = "redis://{host}:6379/0".format(host=REDIS_HOST)
     # jwt
-    JWT_SECRET_KEY = 'movie-secret'
+    JWT_SECRET_KEY = 'Mobile Device Borrowing by Tavis D'
     JWT_ACCESS_TOKEN_EXPIRES = 900  # 900秒=15min * 60
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access']
