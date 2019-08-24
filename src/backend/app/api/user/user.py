@@ -6,7 +6,7 @@ Author：TavisD
 Time：2019/8/22 15:35
 """
 from flask import Blueprint, request, current_app
-from flask_jwt_extended import jwt_required, get_raw_jwt
+from flask_jwt_extended import get_raw_jwt, get_jwt_claims
 from marshmallow import fields, validates_schema, ValidationError
 from marshmallow.validate import Length
 
@@ -14,7 +14,7 @@ from app import generate_response, Code, db, redis_client
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
-from app.common.utils import delete_false_empty_page_args, admin_or_has_permission, operation_only_self
+from app.common.utils import delete_false_empty_page_args, admin_or_has_permission, admin_or_has_permission_self
 from app.model.user import User
 
 user_bp = Blueprint('user_bp', __name__)
@@ -58,8 +58,7 @@ class UsersSchema(BaseSchema):
 
 
 @user_bp.route('/get_user/<int:user_id>')
-@admin_or_has_permission(OperationPermission.USER_GET_USER)
-@operation_only_self
+@admin_or_has_permission_self(OperationPermission.USER_GET_USER)
 def get_user(user_id):
     user = User.query.filter_by(id=user_id).first()
     if user:
@@ -68,8 +67,7 @@ def get_user(user_id):
 
 
 @user_bp.route('/update_user/<int:user_id>', methods=['POST'])
-@jwt_required
-@admin_or_has_permission(OperationPermission.USER_UPDATE_USER)
+@admin_or_has_permission_self(OperationPermission.USER_UPDATE_USER)
 def update_user(user_id):
     update_user_schema = UserSchema()
     validate_result = update_user_schema.validate(request.form)
@@ -92,12 +90,15 @@ def update_user(user_id):
 
 
 @user_bp.route('/update_password/<int:user_id>', methods=['POST'])
-@admin_or_has_permission(OperationPermission.USER_UPDATE_PASSWORD)
+@admin_or_has_permission_self(OperationPermission.USER_UPDATE_PASSWORD)
 def update_password(user_id):
     password_schema = PasswordSchema()
     validate_result = password_schema.validate(request.form)
     if validate_result:
         return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
+    claims = get_jwt_claims()
+    if user_id != claims['id']:
+        return generate_response(code_msg=Code.PERMISSION_DENIED), 403
     user = User.query.filter_by(id=user_id).first()
     if user and user.password == request.form.get("old_password"):
         user.password = request.form.get("new_password")

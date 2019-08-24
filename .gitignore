@@ -5,3 +5,5 @@
 
 src/backend/logs/
 
+
+src/backend/Pipfile.lock

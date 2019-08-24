@@ -60,7 +60,7 @@ def get_permissions_from_redis(user_id):
 
 
 def get_roles_from_redis(user):
-    result = redis_client.hget("user_{user_id}".format(user_id=user.user_id), "roles")
+    result = redis_client.hget("user_{user_id}".format(user_id=user.id), "roles")
     if result:
         return json.loads(result.decode('utf-8'))
     roles = set()
@@ -73,6 +73,12 @@ def get_roles_from_redis(user):
 
 
 def admin_or_has_permission(permission):
+    """
+    admin或有权限
+    :param permission:
+    :return:
+    """
+
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -96,21 +102,31 @@ def admin_or_has_permission(permission):
     return decorate
 
 
-def operation_only_self(func):
+def admin_or_has_permission_self(permission):
     """
-    只能操作user自己的
-    :param func:
+    admin可以处理所有数据。或有权限，且有权限时只能处理自己的数据。
+    :param permission:
     :return:
     """
 
-    def wrapper(*args, **kwargs):
-        claims = get_jwt_claims()
-        print(kwargs['user_id'])
-        print(claims['id'])
-        if kwargs['user_id'] == claims['id']:
-            return func(*args, **kwargs)
-        return generate_response(code_msg=Code.PERMISSION_DENIED), 403
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            verify_jwt_in_request()
+            claims = get_jwt_claims()
+            # admin角色可以访问所有
+            result = redis_client.hget("user_{user_id}".format(user_id=claims['id']), "roles")
+            if result:
+                roles = json.loads(result.decode('utf-8'))
+                if "admin" in roles:
+                    return func(*args, **kwargs)
+            # 或者有操作权限
+            permissions = get_permissions_from_redis(claims['id'])
+            if permission in permissions and "user_id" in kwargs.keys() and kwargs['user_id'] == claims['id']:
+                return func(*args, **kwargs)
+            return generate_response(code_msg=Code.PERMISSION_DENIED), 403
 
-    # Renaming the function name，不然会报视图名字重复
-    wrapper.__name__ = func.__name__
-    return wrapper
+        wrapper.__name__ = func.__name__
+        return wrapper
+
+    return decorate
