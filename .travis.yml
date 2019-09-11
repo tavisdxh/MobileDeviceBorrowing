@@ -15,4 +15,5 @@ jobs:
       script:
         - nohup python manage.py runserver &
     - stage: test
-      script: pytest test
+      before_install: cd src/backend/test
+      script: pytest 
