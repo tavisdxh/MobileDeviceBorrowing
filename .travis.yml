@@ -13,6 +13,6 @@ jobs:
         - pip install pipenv
         - pipenv install
       script:
-        - python manage.py runserver
+        - nohup python manage.py runserver &
     - stage: test
       script: pytest test
