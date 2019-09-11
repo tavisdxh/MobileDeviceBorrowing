@@ -1,12 +1,18 @@
 language: python
 python:
   - '3.7'
+services:
+  - redis-server
 env:
-- FLASK_ENV=dev
-before_install: cd src/backend
-install:
-  - pip install pipenv
-  - pipenv install
-script:
-  - python manage.py runserver
-  - pytest test
+  - FLASK_ENV=dev
+jobs:
+  include:
+    - stage: deploy
+      before_install: cd src/backend
+      install:
+        - pip install pipenv
+        - pipenv install
+      script:
+        - python manage.py runserver
+    - stage: test
+      script: pytest test
