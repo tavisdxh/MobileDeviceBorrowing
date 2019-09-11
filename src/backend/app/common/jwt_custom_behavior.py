@@ -55,8 +55,8 @@ def add_claims_to_access_token(user_id):
 
 @jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
-    jti = decrypted_token['jti']
-    entry = redis_client.get(jti)
+    id = decrypted_token['identity']
+    entry = redis_client.get("user_token_expired_{id}".format(id=id))
     if entry is None:
         return True
     return bytes.decode(entry) == 'true'

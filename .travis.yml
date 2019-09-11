@@ -11,4 +11,4 @@ install:
   - pipenv install
 script:
   - nohup python manage.py runserver &
-  - pytest test
+  - pytest test  -sv

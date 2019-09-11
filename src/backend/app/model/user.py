@@ -16,7 +16,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(32), unique=True, index=True, nullable=False, comment='用户名')
     password = db.Column(db.String(128), nullable=False, comment='密码')
-    realname = db.Column(db.String(10), nullable=False, comment='真实姓名')
+    realname = db.Column(db.String(32), nullable=False, comment='真实姓名')
     email = db.Column(db.String(40), nullable=False, comment='邮箱')
     status = db.Column(db.Integer, default=1, comment="状态，1：启用，0：禁用")
     roles = db.relationship("Role", backref="user", secondary="user_role")

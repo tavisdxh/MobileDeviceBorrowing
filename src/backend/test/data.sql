@@ -1,3 +1,18 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : sqlite-dev
+ Source Server Type    : SQLite
+ Source Server Version : 3017000
+ Source Schema         : main
+
+ Target Server Type    : SQLite
+ Target Server Version : 3017000
+ File Encoding         : 65001
+
+ Date: 11/09/2019 15:16:47
+*/
+
 PRAGMA foreign_keys = false;
 
 -- ----------------------------
@@ -40,7 +55,7 @@ CREATE TABLE "role" (
 -- Records of role
 -- ----------------------------
 INSERT INTO "role" VALUES (1, 'admin', '管理员', '2019-09-10 14:02:43', '2019-09-10 14:02:43');
-INSERT INTO "role" VALUES (2, 'normal', '普通成员', '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "role" VALUES (2, 'normal', '普通用户', '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role_permission
@@ -55,6 +70,15 @@ CREATE TABLE "role_permission" (
 );
 
 -- ----------------------------
+-- Records of role_permission
+-- ----------------------------
+INSERT INTO "role_permission" VALUES (2, 1);
+INSERT INTO "role_permission" VALUES (2, 2);
+INSERT INTO "role_permission" VALUES (2, 3);
+INSERT INTO "role_permission" VALUES (2, 4);
+INSERT INTO "role_permission" VALUES (2, 5);
+
+-- ----------------------------
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS "user";
@@ -62,7 +86,7 @@ CREATE TABLE "user" (
   "id" INTEGER NOT NULL,
   "username" VARCHAR(32) NOT NULL,
   "password" VARCHAR(128) NOT NULL,
-  "realname" VARCHAR(10) NOT NULL,
+  "realname" VARCHAR(32) NOT NULL,
   "email" VARCHAR(40) NOT NULL,
   "status" INTEGER,
   "create_time" DATETIME,
@@ -74,6 +98,10 @@ CREATE TABLE "user" (
 -- Records of user
 -- ----------------------------
 INSERT INTO "user" VALUES (1, 'admin', 'admin', '超级管理员', 'admin@admin.com', 1, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "user" VALUES (2, 'test1', 'test1', 'test1', 'test1@test1.com', 1, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "user" VALUES (3, 'test2', 'test2', 'test2', 'test2@test2.com', 1, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "user" VALUES (4, 'test3', 'test3', 'test3', 'test3@test3.com', 1, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "user" VALUES (5, 'test4', 'test4', 'test4', 'test4@test4.com', 1, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for user_role
@@ -91,6 +119,8 @@ CREATE TABLE "user_role" (
 -- Records of user_role
 -- ----------------------------
 INSERT INTO "user_role" VALUES (1, 1);
+INSERT INTO "user_role" VALUES (2, 2);
+INSERT INTO "user_role" VALUES (3, 2);
 
 -- ----------------------------
 -- Indexes structure for table permission

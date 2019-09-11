@@ -7,26 +7,18 @@ Time：2019/8/23 10:01
 """
 
 import pytest
-import requests
 
 from app.model.user import User
-from test.utils import get_db_session, HOST
+from test.utils import get_db_session, HOST, http_post
 
-
-@pytest.fixture()
-def register_url():
-    return HOST + "auth/register"
-
-
-@pytest.fixture()
-def login_url():
-    return HOST + "auth/login"
+register_url = HOST + "auth/register"
+login_url = HOST + "auth/login"
 
 
 @pytest.fixture()
 def delete_test_user():
     session = get_db_session()
-    user = session.query(User).filter_by(username='username_tavisd').first()
+    user = session.query(User).filter_by(username='username_test').first()
     if user:
         session.delete(user)
         session.commit()
@@ -35,34 +27,44 @@ def delete_test_user():
 @pytest.fixture()
 def add_test_user():
     session = get_db_session()
-    user = session.query(User).filter_by(username='username_tavisd').first()
+    user = session.query(User).filter_by(username='username_test').first()
     if not user:
-        user = User(username='username_tavisd',
-                    realname="TavisD",
-                    email="test@tavisd.com",
+        user = User(username='username_test',
+                    realname="realname_test",
+                    email="test@test.com",
                     password="1234")
         session.add(user)
         session.commit()
 
 
-def test_register_successfully(init, register_url, delete_test_user):
-    data = {"username": "username_tavisd",
-            "realname": "TavisD",
-            "email": "test@tavisd.com",
+def test_register_successfully(delete_test_user):
+    """
+    成功注册
+    :param delete_test_user:
+    :return:
+    """
+    data = {"username": "username_test",
+            "realname": "realname_test",
+            "email": "test@test.com",
             "password": "1234",
             "repeat_password": "1234"}
-    result = requests.post(register_url, data)
+    result = http_post(register_url, data)
     assert result.json()["code"] == 0
-    assert result.json()["data"]["username"] == "username_tavisd"
+    assert result.json()["data"]["username"] == "username_test"
 
 
-def test_register_has_exist_user(init, register_url, add_test_user):
-    data = {"username": "username_tavisd",
-            "realname": "TavisD",
-            "email": "test@tavisd.com",
+def test_register_has_exist_user(add_test_user):
+    """
+    用户名已存在，注册失败
+    :param add_test_user:
+    :return:
+    """
+    data = {"username": "username_test",
+            "realname": "realname_test",
+            "email": "test@test.com",
             "password": "1234",
             "repeat_password": "1234"}
-    result = requests.post(register_url, data)
+    result = http_post(register_url, data)
     assert result.json()["code"] == 2000
     assert result.json()["msg"] == "用户已存在"
 
@@ -75,46 +77,72 @@ def test_register_has_exist_user(init, register_url, add_test_user):
     ('aaaa', "aaaa", "1@1.com", "1234", "12"),
     ('aaaa', "aaaa", "1@1.com", "1234", "12"),
 ])
-def test_register_error_parameter(init, register_url, username, realname, email, password, repeat_password):
+def test_register_error_parameter(username, realname, email, password, repeat_password):
+    """
+    使用错误参数注册失败
+    :param username:
+    :param realname:
+    :param email:
+    :param password:
+    :param repeat_password:
+    :return:
+    """
     data = {"username": username,
             "realname": realname,
             "email": email,
             "password": password,
             "repeat_password": repeat_password}
-    result = requests.post(register_url, data)
+    result = http_post(register_url, data)
     assert result.json()['code'] == 1000
     assert result.json()['msg'] == "参数错误"
 
 
-def test_login_successfully(init, login_url, add_test_user):
-    data = {"username": "username_tavisd",
+def test_login_successfully(add_test_user):
+    """
+    成功登录
+    :param add_test_user:
+    :return:
+    """
+    data = {"username": "username_test",
             "password": "1234"}
-    result = requests.post(login_url, data)
+    result = http_post(login_url, data)
     assert result.json()['code'] == 0
-    assert result.json()['data']['username'] == 'username_tavisd'
+    assert result.json()['data']['username'] == 'username_test'
     assert result.json()['data']['access_token']
 
 
-def test_login_disable_user(init, login_url, add_test_user):
+def test_login_disable_user(add_test_user):
+    """
+    已被禁用的用户无法登录
+    :param add_test_user:
+    :return:
+    """
     session = get_db_session()
-    user = session.query(User).filter_by(username='username_tavisd').first()
+    user = session.query(User).filter_by(username='username_test').first()
     user.status = 0
     session.add(user)
     session.commit()
-    data = {"username": "username_tavisd",
+    data = {"username": "username_test",
             "password": "1234"}
-    result = requests.post(login_url, data)
+    result = http_post(login_url, data)
     assert result.json()['code'] == 2002
     assert result.json()['msg'] == "用户已被禁用"
 
 
 @pytest.mark.parametrize("username,password", [
-    ("username_tavisd", "12345"),
-    ("username_tavis", "1234"),
+    ("username_test", "12345"),
+    ("username_test_wrong", "1234"),
 ])
-def test_login_error(init, login_url, add_test_user, username, password):
+def test_login_error(add_test_user, username, password):
+    """
+    用户名或密码不正确，登录失败
+    :param add_test_user:
+    :param username:
+    :param password:
+    :return:
+    """
     data = {"username": username,
             "password": password}
-    result = requests.post(login_url, data)
+    result = http_post(login_url, data)
     assert result.json()['code'] == 2003
     assert result.json()['msg'] == "用户名或密码无效"

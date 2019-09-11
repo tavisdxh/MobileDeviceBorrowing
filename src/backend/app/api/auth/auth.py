@@ -6,7 +6,7 @@ Author：TavisD
 Time：2019/8/22 15:33
 """
 from flask import Blueprint, request, current_app
-from flask_jwt_extended import create_access_token, get_jti, jwt_required, get_raw_jwt
+from flask_jwt_extended import create_access_token, jwt_required, get_raw_jwt
 from marshmallow import fields, validates_schema, ValidationError
 from marshmallow.validate import Length
 
@@ -65,8 +65,8 @@ def register():
             access_token = create_access_token(identity=new_user.id)
             new_user_dump["permissions"] = get_permissions_from_redis(new_user.id)
             new_user_dump["roles"] = get_roles_from_redis(new_user)
-            access_jti = get_jti(encoded_token=access_token)
-            redis_client.set(access_jti, 'false', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+            redis_client.set("user_token_expired_{id}".format(id=new_user.id), 'false',
+                             ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
             new_user_dump["access_token"] = access_token
             return generate_response(data=new_user_dump)
         except Exception as e:
@@ -88,10 +88,10 @@ def login():
                 return generate_response(code_msg=Code.USER_IS_DISABLED), 401
             exist_user_dump = user_schema.dump(exist_user)
             access_token = create_access_token(identity=exist_user.id)
+            redis_client.set("user_token_expired_{id}".format(id=exist_user.id), 'false',
+                             ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
             exist_user_dump["permissions"] = get_permissions_from_redis(exist_user.id)
             exist_user_dump["roles"] = get_roles_from_redis(exist_user)
-            access_jti = get_jti(encoded_token=access_token)
-            redis_client.set(access_jti, 'false', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
             exist_user_dump["access_token"] = access_token
             return generate_response(data=exist_user_dump)
     return generate_response(code_msg=Code.USERNAME_OR_PASSWORD_INVALID)
@@ -100,6 +100,6 @@ def login():
 @auth_bp.route('/logout')
 @jwt_required
 def logout():
-    jti = get_raw_jwt()['jti']
-    redis_client.set(jti, 'true', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+    id = get_raw_jwt()['identity']
+    redis_client.set("user_token_expired_{id}".format(id=id), 'true', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
     return generate_response()

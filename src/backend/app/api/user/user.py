@@ -6,7 +6,7 @@ Author：TavisD
 Time：2019/8/22 15:35
 """
 from flask import Blueprint, request, current_app
-from flask_jwt_extended import get_raw_jwt, get_jwt_claims
+from flask_jwt_extended import get_jwt_claims
 from marshmallow import fields, validates_schema, ValidationError
 from marshmallow.validate import Length
 
@@ -27,7 +27,7 @@ class UserSchema(BaseSchema):
 
     id = fields.Integer(dump_only=True)
     username = fields.Str(required=True, validate=Length(min=4, max=32))
-    realname = fields.Str(required=True, validate=Length(min=2, max=10))
+    realname = fields.Str(required=True, validate=Length(min=2, max=32))
     email = fields.Email(required=True)
 
 
@@ -105,8 +105,8 @@ def update_password(user_id):
         try:
             db.session.add(user)
             db.session.commit()
-            jti = get_raw_jwt()['jti']
-            redis_client.set(jti, 'true', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+            redis_client.set("user_token_expired_{id}".format(id=user_id), 'true',
+                             ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
             return generate_response()
         except Exception as e:
             current_app.logger.error(str(e))
@@ -123,8 +123,8 @@ def delete_user(user_id):
         try:
             db.session.add(user)
             db.session.commit()
-            jti = get_raw_jwt()['jti']
-            redis_client.set(jti, 'true', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+            redis_client.set("user_token_expired_{id}".format(id=user_id), 'true',
+                             ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
             return generate_response()
         except Exception as e:
             current_app.logger.error(str(e))

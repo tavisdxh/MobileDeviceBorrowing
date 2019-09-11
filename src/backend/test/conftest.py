@@ -10,11 +10,15 @@ from pathlib import Path
 
 import pytest
 
+from app.model.user import User
+from test.utils import http_post, HOST, get_db_session
+
 db_file = str(Path(__file__).parent.parent.joinpath("dev.db"))
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="module", autouse=True)
 def init():
-    print("initializing db..........")
+    print("\nInitializing db..........")
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     with open(str(Path(__file__).parent.joinpath("data.sql")), encoding="utf-8") as f:
@@ -22,3 +26,78 @@ def init():
         conn.commit()
     cursor.close()
     conn.close()
+
+
+@pytest.fixture(scope="module")
+def admin_token():
+    session = get_db_session()
+    user = session.query(User).filter_by(username='admin').first()
+    if not user:
+        user = User(id=1,
+                    username='admin',
+                    realname="admin",
+                    email="admin@admin.com",
+                    password="admin",
+                    status=1
+                    )
+        session.add(user)
+        session.commit()
+    data = {"username": "admin",
+            "password": "admin"}
+    return http_post(HOST + "auth/login", data).json()['data']['access_token']
+
+
+@pytest.fixture(scope="module")
+def test1_token():
+    session = get_db_session()
+    user = session.query(User).filter_by(username='test1').first()
+    if not user:
+        user = User(id=2,
+                    username='test1',
+                    realname="test1",
+                    email="test1@test1.com",
+                    password="test1",
+                    status=1
+                    )
+        session.add(user)
+        session.commit()
+    data = {"username": "test1",
+            "password": "test1"}
+    return http_post(HOST + "auth/login", data).json()['data']['access_token']
+
+
+@pytest.fixture(scope="module")
+def test2_token():
+    session = get_db_session()
+    user = session.query(User).filter_by(username='test2').first()
+    if not user:
+        user = User(id=2,
+                    username='test2',
+                    realname="test2",
+                    email="test2@test2.com",
+                    password="test2",
+                    status=1
+                    )
+        session.add(user)
+        session.commit()
+    data = {"username": "test2",
+            "password": "test2"}
+    return http_post(HOST + "auth/login", data).json()['data']['access_token']
+
+@pytest.fixture(scope="module")
+def test3_token():
+    session = get_db_session()
+    user = session.query(User).filter_by(username='test3').first()
+    if not user:
+        user = User(id=2,
+                    username='test3',
+                    realname="test3",
+                    email="test3@test3.com",
+                    password="test3",
+                    status=1
+                    )
+        session.add(user)
+        session.commit()
+    data = {"username": "test3",
+            "password": "test3"}
+    return http_post(HOST + "auth/login", data).json()['data']['access_token']
