@@ -12,7 +12,6 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
 from app import create_app, db
-
 app = create_app(os.getenv('FLASK_ENV') or 'default')
 manager = Manager(app)
 migrate = Migrate(app, db, compare_type=True)

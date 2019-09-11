@@ -4,6 +4,7 @@
 *.pyc
 
 src/backend/logs/
-
+src/backend/migrations
 
 src/backend/Pipfile.lock
+

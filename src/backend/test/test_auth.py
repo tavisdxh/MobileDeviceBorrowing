@@ -24,7 +24,7 @@ def login_url():
 
 
 @pytest.fixture()
-def setup_delete_user():
+def delete_test_user():
     session = get_db_session()
     user = session.query(User).filter_by(username='username_tavisd').first()
     if user:
@@ -33,7 +33,7 @@ def setup_delete_user():
 
 
 @pytest.fixture()
-def setup_add_user():
+def add_test_user():
     session = get_db_session()
     user = session.query(User).filter_by(username='username_tavisd').first()
     if not user:
@@ -45,7 +45,7 @@ def setup_add_user():
         session.commit()
 
 
-def test_register_successfully(register_url, setup_delete_user):
+def test_register_successfully(init, register_url, delete_test_user):
     data = {"username": "username_tavisd",
             "realname": "TavisD",
             "email": "test@tavisd.com",
@@ -56,7 +56,7 @@ def test_register_successfully(register_url, setup_delete_user):
     assert result.json()["data"]["username"] == "username_tavisd"
 
 
-def test_register_has_exist_user(register_url, setup_add_user):
+def test_register_has_exist_user(init, register_url, add_test_user):
     data = {"username": "username_tavisd",
             "realname": "TavisD",
             "email": "test@tavisd.com",
@@ -75,7 +75,7 @@ def test_register_has_exist_user(register_url, setup_add_user):
     ('aaaa', "aaaa", "1@1.com", "1234", "12"),
     ('aaaa', "aaaa", "1@1.com", "1234", "12"),
 ])
-def test_register_error_parameter(register_url, username, realname, email, password, repeat_password):
+def test_register_error_parameter(init, register_url, username, realname, email, password, repeat_password):
     data = {"username": username,
             "realname": realname,
             "email": email,
@@ -86,7 +86,7 @@ def test_register_error_parameter(register_url, username, realname, email, passw
     assert result.json()['msg'] == "参数错误"
 
 
-def test_login_successfully(login_url, setup_add_user):
+def test_login_successfully(init, login_url, add_test_user):
     data = {"username": "username_tavisd",
             "password": "1234"}
     result = requests.post(login_url, data)
@@ -95,7 +95,7 @@ def test_login_successfully(login_url, setup_add_user):
     assert result.json()['data']['access_token']
 
 
-def test_login_disable_user(login_url, setup_add_user):
+def test_login_disable_user(init, login_url, add_test_user):
     session = get_db_session()
     user = session.query(User).filter_by(username='username_tavisd').first()
     user.status = 0
@@ -112,7 +112,7 @@ def test_login_disable_user(login_url, setup_add_user):
     ("username_tavisd", "12345"),
     ("username_tavis", "1234"),
 ])
-def test_login_error(login_url, setup_add_user, username, password):
+def test_login_error(init, login_url, add_test_user, username, password):
     data = {"username": username,
             "password": password}
     result = requests.post(login_url, data)

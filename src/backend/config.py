@@ -27,11 +27,6 @@ def set_log(app, level):
 class Config:
     SECRET_KEY = "Mobile Device Borrowing by Tavis D"
     # database
-    DB_HOST = os.environ.get('DB_HOST') or '127.0.0.1'
-    DB_USER = os.environ.get('DB_USER') or 'root'
-    DB_PASSWORD = os.environ.get('DB_PASSWORD') or '123456'
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{user}:{password}@{host}/mobile_device_borrowing?charset=utf8mb4".format(
-        user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # apscheduler
     SCHEDULER_JOBSTORES = {
@@ -56,6 +51,7 @@ class Config:
 class DevConfig(Config):
     DEBUG = True
     LOG_LEVEL = logging.DEBUG
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + str(Path(__file__).cwd().joinpath("dev.db"))
 
     @classmethod
     def init_app(cls, app):
@@ -65,6 +61,11 @@ class DevConfig(Config):
 
 class ProConfig(Config):
     LOG_LEVEL = logging.INFO
+    DB_HOST = os.environ.get('DB_HOST') or '127.0.0.1'
+    DB_USER = os.environ.get('DB_USER') or 'root'
+    DB_PASSWORD = os.environ.get('DB_PASSWORD') or '123456'
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{user}:{password}@{host}/mobile_device_borrowing?charset=utf8mb4".format(
+        user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
 
     @classmethod
     def init_app(cls, app):

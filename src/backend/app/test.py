@@ -15,3 +15,5 @@ def hello_world():
     current_app.logger.info('test hello')
     current_app.logger.error('test error hello')
     return 'Hello, World!'
+
+
