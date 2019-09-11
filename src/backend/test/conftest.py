@@ -5,13 +5,21 @@ Desc：
 Author：TavisD 
 Time：2019/9/11 10:53
 """
+import sqlite3
+from pathlib import Path
 
 import pytest
 
-from test.utils import init_db
+db_file = str(Path(__file__).cwd().parent.joinpath("dev.db"))
 
 
 @pytest.fixture(scope="session")
 def init():
     print("initializing db..........")
-    init_db()
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+    with open(str(Path(__file__).cwd().joinpath("data.sql")), encoding="utf-8") as f:
+        cursor.executescript(f.read())
+        conn.commit()
+    cursor.close()
+    conn.close()
