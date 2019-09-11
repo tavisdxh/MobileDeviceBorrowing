@@ -9,10 +9,12 @@ Time：2019/8/23 10:01
 import pytest
 
 from app.model.user import User
-from test.utils import get_db_session, HOST, http_post
+from test.test_user import get_user_url
+from test.utils import get_db_session, HOST, http_post, http_get
 
 register_url = HOST + "auth/register"
 login_url = HOST + "auth/login"
+logout_url = HOST + "auth/logout"
 
 
 @pytest.fixture()
@@ -146,3 +148,17 @@ def test_login_error(add_test_user, username, password):
     result = http_post(login_url, data)
     assert result.json()['code'] == 2003
     assert result.json()['msg'] == "用户名或密码无效"
+
+
+def test_logout_successfully(admin_token):
+    """
+    注销用户成功
+    :param admin_token:
+    :return:
+    """
+    result = http_get(logout_url, token=admin_token)
+    assert result.json()['code'] == 0
+    result = http_get(get_user_url.format(user_id=1), token=admin_token)
+    assert result.status_code == 401
+    assert result.json()['code'] == 1002
+    assert result.json()['msg'] == "认证错误"
