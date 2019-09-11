@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 HOST = "http://127.0.0.1:5000/api/"
-db_file = str(Path(__file__).cwd().parent.joinpath("dev.db"))
+db_file = str(Path(__file__).parent.parent.joinpath("dev.db"))
 
 
 def get_db_session():

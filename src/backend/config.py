@@ -51,7 +51,7 @@ class Config:
 class DevConfig(Config):
     DEBUG = True
     LOG_LEVEL = logging.DEBUG
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + str(Path(__file__).cwd().joinpath("dev.db"))
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + str(Path(__file__).parent.joinpath("dev.db"))
 
     @classmethod
     def init_app(cls, app):
