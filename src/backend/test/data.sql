@@ -35,8 +35,8 @@ CREATE TABLE "permission" (
 INSERT INTO "permission" VALUES (1, 'user_get_user', '获取用户信息', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (2, 'user_update_user', '更新用户信息', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (3, 'user_update_password', '修改密码', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
-INSERT INTO "permission" VALUES (4, 'user_delete_user', '删除用户', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
-INSERT INTO "permission" VALUES (5, 'user_get_users', '获取所有用户', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (4, 'user_get_users', '获取所有用户', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (5, 'device_add_device', '添加设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role
@@ -145,5 +145,34 @@ CREATE UNIQUE INDEX "ix_user_username"
 ON "user" (
   "username" ASC
 );
+
+-- ----------------------------
+-- Table structure for device
+-- ----------------------------
+DROP TABLE IF EXISTS "device";
+CREATE TABLE device (
+	id INTEGER NOT NULL,
+	type VARCHAR(15) NOT NULL,
+	brand VARCHAR(32) NOT NULL,
+	model VARCHAR(100) NOT NULL,
+	os VARCHAR(15) NOT NULL,
+	os_version VARCHAR(32),
+	resolution VARCHAR(32),
+	asset_no VARCHAR(100),
+	root VARCHAR(3),
+	location VARCHAR(32),
+	status INTEGER,
+	owner_id INTEGER,
+	current_user_id INTEGER,
+	"desc" VARCHAR(200),
+	create_time DATETIME,
+	update_time DATETIME,
+	PRIMARY KEY (id),
+	FOREIGN KEY(current_user_id) REFERENCES user (id),
+	FOREIGN KEY(owner_id) REFERENCES user (id)
+);
+
+
+
 
 PRAGMA foreign_keys = true;

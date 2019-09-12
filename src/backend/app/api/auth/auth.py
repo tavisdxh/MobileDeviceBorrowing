@@ -45,18 +45,18 @@ class RegisterSchema(UserSchema):
 @auth_bp.route('/register', methods=['POST'])
 def register():
     register_schema = RegisterSchema()
-    validate_result = register_schema.validate(request.form)
+    validate_result = register_schema.validate(request.json)
     if validate_result:
         return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
-    exist_user = User.query.filter_by(username=request.form.get("username")).first()
+    exist_user = User.query.filter_by(username=request.json.get("username")).first()
     if exist_user:
         return generate_response(code_msg=Code.USER_EXIST)
     else:
         try:
-            new_user = User(username=request.form.get("username"),
-                            password=request.form.get("password"),
-                            realname=request.form.get("realname"),
-                            email=request.form.get("email"))
+            new_user = User(username=request.json.get("username"),
+                            password=request.json.get("password"),
+                            realname=request.json.get("realname"),
+                            email=request.json.get("email"))
             role = Role.query.filter_by(name="normal").first()
             new_user.roles.append(role)
             db.session.add(new_user)
@@ -78,12 +78,12 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     login_schema = LoginSchema()
-    validate_result = login_schema.validate(request.form)
+    validate_result = login_schema.validate(request.json)
     if validate_result:
         return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
-    exist_user = User.query.filter_by(username=request.form.get("username")).first()
+    exist_user = User.query.filter_by(username=request.json.get("username")).first()
     if exist_user:
-        if exist_user.password == request.form.get("password", None):
+        if exist_user.password == request.json.get("password"):
             if exist_user.status == 0:
                 return generate_response(code_msg=Code.USER_IS_DISABLED), 401
             exist_user_dump = user_schema.dump(exist_user)

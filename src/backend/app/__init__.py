@@ -36,11 +36,14 @@ def create_app(config_name):
     from app.test import hello_world
     # 引入model
     from app.model.user import User, Role, User_Role, Permission, Role_Permission
+    from app.model.device import Device
 
     # 注册蓝图
     from app.api.auth.auth import auth_bp
     from app.api.user.user import user_bp
+    from app.api.device.device import device_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/user')
+    app.register_blueprint(device_bp, url_prefix='/api/device')
 
     return app

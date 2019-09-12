@@ -12,7 +12,6 @@ from test.utils import HOST, http_post, http_get
 get_user_url = HOST + "user/get_user/{user_id}"
 update_user_url = HOST + "user/update_user/{user_id}"
 update_password_url = HOST + "user/update_password/{user_id}"
-delete_user_url = HOST + "user/delete_user/{user_id}"
 get_users_url = HOST + "user/get_users"
 
 
@@ -148,40 +147,9 @@ def test_update_password_failed_repeat_password(admin_token):
     assert result.json()['data']['_schema'] == ['password must be equivalent']
 
 
-def test_delete_user_successfully_by_admin(admin_token):
-    """
-    成功删除用户，admin用户。admin_or_has_permission权限测试。
-    :param admin_token:
-    :return:
-    """
-    result = http_get(delete_user_url.format(user_id=5), token=admin_token)
-    assert result.json()['code'] == 0
-
-
-def test_delete_user_successfully_has_permission(test2_token):
-    """
-    成功删除用户，普通用户，有权限。admin_or_has_permission权限测试。
-    :param test2_token:
-    :return:
-    """
-    result = http_get(delete_user_url.format(user_id=5), token=test2_token)
-    assert result.json()['code'] == 0
-
-
-def test_delete_user_failed_without_permission(test3_token):
-    """
-    删除用户失败，无权限。admin_or_has_permission权限测试。
-    :param test3_token:
-    :return:
-    """
-    result = http_get(delete_user_url.format(user_id=4), token=test3_token)
-    assert result.json()['code'] == 1003
-    assert result.json()['msg'] == "无权限访问"
-
-
 def test_get_users_successfully(admin_token):
     """
-    成功获取用户列表
+    成功获取用户列表，admin用户。admin_or_has_permission权限测试。
     :param admin_token:
     :return:
     """
@@ -193,7 +161,34 @@ def test_get_users_successfully(admin_token):
     assert result.json()['data'][0]["username"] == "test3"
 
 
-def test_get_users_by_filter(admin_token):
+def test_get_users_successfully_has_permission(test2_token):
+    """
+    成功获取用户列表，有权限用户。admin_or_has_permission权限测试。
+    :param test2_token:
+    :return:
+    """
+    params = {"page": 2, "per_page": 3}
+    result = http_get(get_users_url, params=params, token=test2_token)
+    assert result.json()['code'] == 0
+    assert result.json()['per_page'] == 3
+    assert result.json()['page'] == 2
+    assert result.json()['data'][0]["username"] == "test3"
+
+
+def test_get_users_failed_without_permission(test3_token):
+    """
+    获取用户列表失败，无权限用户。admin_or_has_permission权限测试。
+    :param test3_token:
+    :return:
+    """
+    params = {"page": 2, "per_page": 3}
+    result = http_get(get_users_url, params=params, token=test3_token)
+    assert result.status_code == 403
+    assert result.json()['code'] == 1003
+    assert result.json()['msg'] == "无权限访问"
+
+
+def test_get_users_successfully_by_filter(admin_token):
     """
     成功获取用户列表，使用参数过滤功能
     :param admin_token:

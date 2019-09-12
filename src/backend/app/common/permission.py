@@ -12,5 +12,8 @@ class OperationPermission:
     USER_GET_USER = 'user_get_user'
     USER_UPDATE_USER = 'user_update_user'
     USER_UPDATE_PASSWORD = 'user_update_password'
-    USER_DELETE_USER = 'user_delete_user'
     USER_GET_USERS = 'user_get_users'
+
+    # device业务
+    DEVICE_ADD_DEVICE = 'device_add_device'
+    DEVICE_UPDATE_DEVICE = 'device_update_device'

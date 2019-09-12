@@ -26,7 +26,10 @@ class Code:
     GET_USER_PROFILE_FAILED = {"code": 2004, "msg": "获取用户资料失败"}
     UPDATE_USER_PROFILE_FAILED = {"code": 2005, "msg": "更新用户资料失败"}
     PASSWORD_NOT_CORRECT = {"code": 2006, "msg": "密码不一致"}
-    DELETE_USER_FAILED = {"code": 2007, "msg": "删除用户失败"}
+
+    # device业务
+    ADD_DEVICE_FAILED = {'code': 3000, 'msg': '添加设备失败'}
+    UPDATE_DEVICE_FAILED = {'code': 3001, 'msg': '更新设备失败'}
 
 
 def generate_response(data=None, code=None, msg=None, code_msg=None):

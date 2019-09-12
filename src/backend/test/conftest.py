@@ -84,6 +84,7 @@ def test2_token():
             "password": "test2"}
     return http_post(HOST + "auth/login", data).json()['data']['access_token']
 
+
 @pytest.fixture(scope="module")
 def test3_token():
     session = get_db_session()

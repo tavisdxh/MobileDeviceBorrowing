@@ -25,7 +25,6 @@ class UserSchema(BaseSchema):
         fields = (
             "id", "username", "realname", "email", "status", "create_time", "update_time")
 
-    id = fields.Integer(dump_only=True)
     username = fields.Str(required=True, validate=Length(min=4, max=32))
     realname = fields.Str(required=True, validate=Length(min=2, max=32))
     email = fields.Email(required=True)
@@ -70,18 +69,23 @@ def get_user(user_id):
 @admin_or_has_permission_self(OperationPermission.USER_UPDATE_USER)
 def update_user(user_id):
     update_user_schema = UserSchema()
-    validate_result = update_user_schema.validate(request.form)
+    validate_result = update_user_schema.validate(request.json)
     if validate_result:
         return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     user = User.query.filter_by(id=user_id).first()
     if user:
-        user.username = request.form.get("username", user.username)
-        user.realname = request.form.get("realname", user.realname)
-        user.email = request.form.get("email", user.email)
-        user.status = request.form.get("status", user.status)
+        user.username = request.json.get("username", user.username)
+        user.realname = request.json.get("realname", user.realname)
+        user.email = request.json.get("email", user.email)
+        user.status = request.json.get("status", user.status)
         try:
             db.session.add(user)
             db.session.commit()
+            # 若禁用了，则不允许登录
+            if user.status == 0:
+                redis_client.set("user_token_expired_{id}".format(id=user_id), 'true',
+                                 ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+                redis_client.expire("user_{id}".format(id=user_id), 1)
             return generate_response(data=user_schema.dump(user))
         except Exception as e:
             current_app.logger.error(str(e))
@@ -93,15 +97,15 @@ def update_user(user_id):
 @admin_or_has_permission_self(OperationPermission.USER_UPDATE_PASSWORD)
 def update_password(user_id):
     password_schema = PasswordSchema()
-    validate_result = password_schema.validate(request.form)
+    validate_result = password_schema.validate(request.json)
     if validate_result:
         return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     claims = get_jwt_claims()
     if user_id != claims['id']:
         return generate_response(code_msg=Code.PERMISSION_DENIED), 403
     user = User.query.filter_by(id=user_id).first()
-    if user and user.password == request.form.get("old_password"):
-        user.password = request.form.get("new_password")
+    if user and user.password == request.json.get("old_password"):
+        user.password = request.json.get("new_password")
         try:
             db.session.add(user)
             db.session.commit()
@@ -112,24 +116,6 @@ def update_password(user_id):
             current_app.logger.error(str(e))
             db.session.rollback()
     return generate_response(code_msg=Code.PASSWORD_NOT_CORRECT)
-
-
-@user_bp.route('/delete_user/<int:user_id>')
-@admin_or_has_permission(OperationPermission.USER_DELETE_USER)
-def delete_user(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    if user:
-        user.status = 0
-        try:
-            db.session.add(user)
-            db.session.commit()
-            redis_client.set("user_token_expired_{id}".format(id=user_id), 'true',
-                             ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
-            return generate_response()
-        except Exception as e:
-            current_app.logger.error(str(e))
-            db.session.rollback()
-    return generate_response(code_msg=Code.DELETE_USER_FAILED)
 
 
 @user_bp.route('/get_users')

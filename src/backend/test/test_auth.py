@@ -55,7 +55,7 @@ def test_register_successfully(delete_test_user):
     assert result.json()["data"]["username"] == "username_test"
 
 
-def test_register_has_exist_user(add_test_user):
+def test_register_failed_exist_user(add_test_user):
     """
     用户名已存在，注册失败
     :param add_test_user:
@@ -79,7 +79,7 @@ def test_register_has_exist_user(add_test_user):
     ('aaaa', "aaaa", "1@1.com", "1234", "12"),
     ('aaaa', "aaaa", "1@1.com", "1234", "12"),
 ])
-def test_register_error_parameter(username, realname, email, password, repeat_password):
+def test_register_failed_error_parameter(username, realname, email, password, repeat_password):
     """
     使用错误参数注册失败
     :param username:
@@ -113,7 +113,7 @@ def test_login_successfully(add_test_user):
     assert result.json()['data']['access_token']
 
 
-def test_login_disable_user(add_test_user):
+def test_login_failed_disable_user(add_test_user):
     """
     已被禁用的用户无法登录
     :param add_test_user:
@@ -135,7 +135,7 @@ def test_login_disable_user(add_test_user):
     ("username_test", "12345"),
     ("username_test_wrong", "1234"),
 ])
-def test_login_error(add_test_user, username, password):
+def test_login_failed_not_correct(add_test_user, username, password):
     """
     用户名或密码不正确，登录失败
     :param add_test_user:

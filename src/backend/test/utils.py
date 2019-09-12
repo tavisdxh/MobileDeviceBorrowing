@@ -45,7 +45,7 @@ def http_post(url, data, token=None):
         headers = {"Authorization": "Bearer " + str(token)}
         print("Token ", headers)
     print("Data: ", data)
-    result = requests.post(url, data, headers=headers)
+    result = requests.post(url, json=data, headers=headers)
     print("Response code: ", result.status_code)
     print("Response body: ", result.json())
     return result
