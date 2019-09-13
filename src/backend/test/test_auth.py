@@ -39,7 +39,7 @@ def add_test_user():
         session.commit()
 
 
-def test_register_successfully(delete_test_user):
+def test_register_successful(delete_test_user):
     """
     成功注册
     :param delete_test_user:
@@ -99,7 +99,7 @@ def test_register_failed_error_parameter(username, realname, email, password, re
     assert result.json()['msg'] == "参数错误"
 
 
-def test_login_successfully(add_test_user):
+def test_login_successful(add_test_user):
     """
     成功登录
     :param add_test_user:
@@ -150,7 +150,7 @@ def test_login_failed_not_correct(add_test_user, username, password):
     assert result.json()['msg'] == "用户名或密码无效"
 
 
-def test_logout_successfully(admin_token):
+def test_logout_successful(admin_token):
     """
     注销用户成功
     :param admin_token:

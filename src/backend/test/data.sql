@@ -35,8 +35,11 @@ CREATE TABLE "permission" (
 INSERT INTO "permission" VALUES (1, 'user_get_user', '获取用户信息', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (2, 'user_update_user', '更新用户信息', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (3, 'user_update_password', '修改密码', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
-INSERT INTO "permission" VALUES (4, 'user_get_users', '获取所有用户', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (4, 'user_get_users', '获取用户列表', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (5, 'device_add_device', '添加设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (6, 'device_update_device', '更新设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (7, 'device_get_device', '获取设备信息', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (8, 'device_get_devices', '获取设备列表', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role
@@ -77,6 +80,9 @@ INSERT INTO "role_permission" VALUES (2, 2);
 INSERT INTO "role_permission" VALUES (2, 3);
 INSERT INTO "role_permission" VALUES (2, 4);
 INSERT INTO "role_permission" VALUES (2, 5);
+INSERT INTO "role_permission" VALUES (2, 6);
+INSERT INTO "role_permission" VALUES (2, 7);
+INSERT INTO "role_permission" VALUES (2, 8);
 
 -- ----------------------------
 -- Table structure for user
@@ -172,7 +178,9 @@ CREATE TABLE device (
 	FOREIGN KEY(owner_id) REFERENCES user (id)
 );
 
-
+INSERT INTO "device" VALUES (1, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'ios', '12.1.4', '1792×828', '20150731-0134', 'no', '广州', 1, 1, 2, '这个是补充信息', '2019-09-13 09:28:55', '2019-09-13 09:28:55');
+INSERT INTO "device" VALUES (2, 'phone', 'Apple', 'Apple iPhone 8 (A1863) 64GB 银色 移动联通电信4G手机', 'ios', '12.1.3', '1334×750', '20150731-1111', 'no', '广州', 1, 1, 2, '这个是补充信息', '2019-09-13 09:33:09', '2019-09-13 09:33:09');
+INSERT INTO "device" VALUES (3, 'phone', '华为', '华为 HUAWEI P30 Pro', 'android', '9.1', '2340*1080', '20150731-2222', 'no', '广州', 1, 1, 1, '这个是补充信息', '2019-09-13 09:53:24', '2019-09-13 09:53:24');
 
 
 PRAGMA foreign_keys = true;

@@ -17,3 +17,5 @@ class OperationPermission:
     # device业务
     DEVICE_ADD_DEVICE = 'device_add_device'
     DEVICE_UPDATE_DEVICE = 'device_update_device'
+    DEVICE_GET_DEVICE = 'device_get_device'
+    DEVICE_GET_DEVICES = 'device_get_devices'

@@ -7,7 +7,8 @@ Time：2019/8/26 11:47
 """
 import pytest
 
-from test.utils import HOST, http_post, http_get
+from app.model.user import User
+from test.utils import HOST, http_post, http_get, get_db_session
 
 get_user_url = HOST + "user/get_user/{user_id}"
 update_user_url = HOST + "user/update_user/{user_id}"
@@ -15,7 +16,45 @@ update_password_url = HOST + "user/update_password/{user_id}"
 get_users_url = HOST + "user/get_users"
 
 
-def test_get_user_successfully(admin_token):
+@pytest.fixture(scope="class")
+def test2_token():
+    session = get_db_session()
+    user = session.query(User).filter_by(username='test2').first()
+    if not user:
+        user = User(id=2,
+                    username='test2',
+                    realname="test2",
+                    email="test2@test2.com",
+                    password="test2",
+                    status=1
+                    )
+        session.add(user)
+        session.commit()
+    data = {"username": "test2",
+            "password": "test2"}
+    return http_post(HOST + "auth/login", data).json()['data']['access_token']
+
+
+@pytest.fixture(scope="class")
+def test3_token():
+    session = get_db_session()
+    user = session.query(User).filter_by(username='test3').first()
+    if not user:
+        user = User(id=2,
+                    username='test3',
+                    realname="test3",
+                    email="test3@test3.com",
+                    password="test3",
+                    status=1
+                    )
+        session.add(user)
+        session.commit()
+    data = {"username": "test3",
+            "password": "test3"}
+    return http_post(HOST + "auth/login", data).json()['data']['access_token']
+
+
+def test_get_user_successful(admin_token):
     """
     成功获取自己的信息，admin用户。admin_or_has_permission_self权限测试。
     :param admin_token:
@@ -26,7 +65,7 @@ def test_get_user_successfully(admin_token):
     assert result.json()['data']['username'] == 'admin'
 
 
-def test_get_user_admin_get_other_user_successfully(admin_token):
+def test_get_user_admin_get_other_user_successful(admin_token):
     """
     成功获取其他用户信息，admin用户。admin_or_has_permission_self权限测试。
     :param admin_token:
@@ -37,7 +76,7 @@ def test_get_user_admin_get_other_user_successfully(admin_token):
     assert result.json()['data']['id'] == 2
 
 
-def test_get_user_normal_user_get_own_profile_successfully(test1_token):
+def test_get_user_normal_user_get_own_profile_successful(test1_token):
     """
     成功获取自己的信息，有权限用户。admin_or_has_permission_self权限测试。
     :param test1_token:
@@ -83,7 +122,7 @@ def test_get_user_not_exist_user_failed(admin_token):
     assert result.json()['msg'] == "获取用户资料失败"
 
 
-def test_update_user_successfully(admin_token):
+def test_update_user_successful(admin_token):
     """
     更新用户信息成功
     :param admin_token:
@@ -112,7 +151,7 @@ def test_update_user_failed(admin_token, user_id, username, realname, email):
     assert result.json()['msg'] == "更新用户资料失败"
 
 
-def test_update_password_successfully(test1_token):
+def test_update_password_successful(test1_token):
     """
     修改密码成功
     :param test1_token:
@@ -147,7 +186,7 @@ def test_update_password_failed_repeat_password(admin_token):
     assert result.json()['data']['_schema'] == ['password must be equivalent']
 
 
-def test_get_users_successfully(admin_token):
+def test_get_users_successful(admin_token):
     """
     成功获取用户列表，admin用户。admin_or_has_permission权限测试。
     :param admin_token:
@@ -161,7 +200,7 @@ def test_get_users_successfully(admin_token):
     assert result.json()['data'][0]["username"] == "test3"
 
 
-def test_get_users_successfully_has_permission(test2_token):
+def test_get_users_successful_has_permission(test2_token):
     """
     成功获取用户列表，有权限用户。admin_or_has_permission权限测试。
     :param test2_token:
@@ -188,7 +227,7 @@ def test_get_users_failed_without_permission(test3_token):
     assert result.json()['msg'] == "无权限访问"
 
 
-def test_get_users_successfully_by_filter(admin_token):
+def test_get_users_successful_by_filter(admin_token):
     """
     成功获取用户列表，使用参数过滤功能
     :param admin_token:
