@@ -6,6 +6,7 @@ Author：TavisD
 Time：2019/9/12 11:53
 """
 from flask import Blueprint, request, current_app
+from flask_jwt_extended import jwt_optional
 from marshmallow import fields
 
 from app import generate_response, Code, db
@@ -115,11 +116,10 @@ def get_device(device_id):
 
 
 @device_bp.route('/get_devices')
-@admin_or_has_permission(OperationPermission.DEVICE_GET_DEVICES)
+@jwt_optional
 def get_devices():
     query_dict = {}
     query_dict.update(delete_false_empty_page_args(request.args.to_dict()))
-    print(query_dict)
     filter_group = []
     if "model" in query_dict:
         filter_group.append(Device.model.ilike("%{model}%".format(model=query_dict.get("model"))))

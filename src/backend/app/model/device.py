@@ -29,9 +29,36 @@ class Device(db.Model):
     owner = db.relationship("User", foreign_keys=[owner_id])
     current_user = db.relationship("User", foreign_keys=[current_user_id])
     desc = db.Column(db.String(500), comment='描述说明')
+    apply_records = db.relationship("DeviceApplyRecord", backref="device")
     create_time = db.Column(db.DateTime(), default=datetime.datetime.now, comment='创建时间')
     update_time = db.Column(db.DateTime(), default=datetime.datetime.now, onupdate=datetime.datetime.now,
                             comment='更新时间')
 
     def __repr__(self):
         return '<Device id={id} model={model}>'.format(id=self.id, model=self.model)
+
+
+class DeviceApplyRecord(db.Model):
+    __table__name = 'device'
+    __table_args__ = {"extend_existing": True, 'comment': '设备申请记录表'}
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    device_id = db.Column(db.Integer, db.ForeignKey("device.id"), nullable=False)
+    applicant_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, comment="申请人")
+    applicant = db.relationship("User", foreign_keys=[applicant_id])
+    start_time = db.Column(db.DateTime(), default=datetime.datetime.now, comment='借用开始时间')
+    end_time = db.Column(db.DateTime(), default=datetime.datetime.now, comment='借用结束时间')
+    application_desc = db.Column(db.String(100), comment='申请说明')
+    auditor_id = db.Column(db.Integer, db.ForeignKey("user.id"), comment="审批人")
+    auditor = db.relationship("User", foreign_keys=[auditor_id])
+    status = db.Column(db.Integer, default=1, comment="状态，0：取消，1：申请中，2：申请通过，3：申请不通过，4：归还中，5：完成，6：归还不通过")
+    audit_reason = db.Column(db.String(100), comment='审批说明')
+    notify_status = db.Column(db.Integer, default=0, comment="通知状态，0：不需要通知，1：通知中，2：已完成")
+    notify_count = db.Column(db.Integer, default=0, comment="通知次数")
+    create_time = db.Column(db.DateTime(), default=datetime.datetime.now, comment='创建时间')
+    update_time = db.Column(db.DateTime(), default=datetime.datetime.now, onupdate=datetime.datetime.now,
+                            comment='更新时间')
+
+    def __repr__(self):
+        return '<DeviceApplyRecord id={id} device_id={device_id} applicant_id={applicant_id}>'.format(id=self.id,
+                                                                                                      device_id=self.device_id,
+                                                                                                      applicant_id=self.applicant_id)
