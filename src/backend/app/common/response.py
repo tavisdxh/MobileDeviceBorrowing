@@ -31,6 +31,11 @@ class Code:
     ADD_DEVICE_FAILED = {'code': 3000, 'msg': '添加设备失败'}
     UPDATE_DEVICE_FAILED = {'code': 3001, 'msg': '更新设备失败'}
     GET_DEVICE_FAILED = {'code': 3002, 'msg': '获取设备信息失败'}
+    APPLY_FAILED = {'code': 3003, 'msg': '申请失败'}
+    APPLY_DEVICE_NOT_READY = {'code': 3004, 'msg': '设备不可用'}
+    APPLY_DEVICE_DUPLICATE = {'code': 3005, 'msg': '重复申请'}
+    APPLY_DEVICE_RETURN_FAILED = {'code': 3006, 'msg': '归还失败'}
+    APPLY_DEVICE_AUDIT_FAILED = {'code': 3007, 'msg': '审批失败'}
 
 
 def generate_response(data=None, code=None, msg=None, code_msg=None):

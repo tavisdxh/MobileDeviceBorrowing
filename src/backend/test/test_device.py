@@ -14,18 +14,33 @@ get_devices_url = HOST + "device/get_devices"
 
 
 def test_get_device_successful(admin_token):
+    """
+    获取设备详情成功
+    :param admin_token:
+    :return:
+    """
     result = http_get(get_device_url.format(device_id=1), token=admin_token)
     assert result.json()['code'] == 0
     assert result.json()['data']['id'] == 1
 
 
 def test_get_device_failed(admin_token):
+    """
+    获取设备详情失败
+    :param admin_token:
+    :return:
+    """
     result = http_get(get_device_url.format(device_id=999), token=admin_token)
     assert result.json()['code'] == 3002
     assert result.json()['msg'] == "获取设备信息失败"
 
 
 def test_add_device_successful(admin_token):
+    """
+    添加设备成功
+    :param admin_token:
+    :return:
+    """
     data = {
         "type": "phone",
         "brand": "小米",
@@ -52,6 +67,11 @@ def test_add_device_successful(admin_token):
 
 
 def test_update_device_successful(admin_token):
+    """
+    更新设备成功
+    :param admin_token:
+    :return:
+    """
     data = {
         "type": "phone",
         "brand": "小米",
@@ -78,6 +98,11 @@ def test_update_device_successful(admin_token):
 
 
 def test_update_device_failed(admin_token):
+    """
+    更新设备失败
+    :param admin_token:
+    :return:
+    """
     data = {
         "type": "phone",
         "brand": "小米",
@@ -104,6 +129,11 @@ def test_update_device_failed(admin_token):
 
 
 def test_get_devices_successful(admin_token):
+    """
+    获取设备列表成功
+    :param admin_token:
+    :return:
+    """
     params = {"page": 1, "per_page": 2}
     result = http_get(get_devices_url, params=params, token=admin_token)
     assert result.json()['code'] == 0
@@ -111,6 +141,11 @@ def test_get_devices_successful(admin_token):
 
 
 def test_get_devices_successful_by_filter(admin_token):
+    """
+    使用过滤条件获取设备列表成功
+    :param admin_token:
+    :return:
+    """
     params = {"page": 1, "per_page": 20, "brand": "Apple", "model": "apple"}
     result = http_get(get_devices_url, params=params, token=admin_token)
     assert result.json()['code'] == 0
@@ -118,6 +153,11 @@ def test_get_devices_successful_by_filter(admin_token):
 
 
 def test_get_devices_successful_empty(admin_token):
+    """
+    获取设备列表成功，空列表
+    :param admin_token:
+    :return:
+    """
     params = {"page": 1, "per_page": 20, "model": "test"}
     result = http_get(get_devices_url, params=params, token=admin_token)
     assert result.json()['code'] == 0

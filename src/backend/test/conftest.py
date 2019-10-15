@@ -64,3 +64,13 @@ def test1_token():
     data = {"username": "test1",
             "password": "test1"}
     return http_post(HOST + "auth/login", data).json()['data']['access_token']
+
+
+@pytest.fixture
+def execute_sql():
+    def _execute(sql):
+        session = get_db_session()
+        session.execute(sql)
+        session.commit()
+
+    return _execute
