@@ -15,7 +15,7 @@ from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
 from app.common.utils import admin_or_has_permission, delete_false_empty_page_args
-from app.model.device import Device
+from app.model.device import Device, DeviceApplyRecord
 
 device_bp = Blueprint('device_bp', __name__)
 
@@ -80,6 +80,17 @@ def update_device(device_id):
         return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     exist_device = Device.query.filter_by(id=device_id).first()
     if exist_device:
+        # 若当前使用者有变更，需要取消原有用户对该设备的申请记录
+        if request.json.get("current_user") and request.json.get("current_user").get(
+                "id") != exist_device.current_user_id:
+            apply_records = DeviceApplyRecord.query.filter_by(applicant_id=request.json.get("current_user").get("id"),
+                                                              device_id=device_id).filter(
+                DeviceApplyRecord.status.in_([2, 4, 6])).all()
+            if apply_records:
+                for record in apply_records:
+                    record.status = 0
+                    db.session.add(record)
+                    db.session.commit()
         exist_device.type = request.json.get("type")
         exist_device.brand = request.json.get("brand")
         exist_device.model = request.json.get("model")

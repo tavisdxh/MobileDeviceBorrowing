@@ -24,3 +24,4 @@ class OperationPermission:
     DEVICE_APPLY = 'device_apply'
     DEVICE_RETURN = 'device_return'
     DEVICE_AUDIT = 'device_audit'
+    DEVICE_CANCEL = 'device_cancel'

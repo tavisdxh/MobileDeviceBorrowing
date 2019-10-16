@@ -11,6 +11,7 @@ from test.utils import HOST, http_get, http_post, get_db_session
 apply_url = HOST + "device/apply/{device_id}"
 return_url = HOST + "device/return/{apply_id}"
 audit_url = HOST + "device/audit/{apply_id}"
+cancel_url = HOST + "device/cancel/{apply_id}"
 
 
 @pytest.fixture
@@ -251,3 +252,20 @@ def test_owner_approval_apply_failed(test1_token, empty_device_apply_record, exe
     result = http_post(audit_url.format(apply_id=1), data=data, token=test1_token)
     assert result.json()['code'] == 3007
     assert result.json()['msg'] == "审批失败"
+
+
+def test_cancel_apply_successful(test1_token, empty_device_apply_record, execute_sql):
+    """
+    取消申请成功
+    :param test1_token:
+    :param empty_device_apply_record:
+    :param execute_sql:
+    :return:
+    """
+    empty_device_apply_record(1, 1)
+    sql = """INSERT INTO "main"."device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 4, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+        """
+    execute_sql(sql)
+    result = http_get(cancel_url.format(apply_id=1), token=test1_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"

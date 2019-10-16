@@ -139,11 +139,28 @@ def audit(apply_id):
             try:
                 db.session.add(apply_record)
                 db.session.add(device)
-                print(device)
-                print(device.current_user_id)
                 db.session.commit()
                 return generate_response()
             except Exception as e:
                 current_app.logger.error(str(e))
                 db.session.rollback()
     return generate_response(code_msg=Code.APPLY_DEVICE_AUDIT_FAILED)
+
+
+@device_apply_bp.route('/cancel/<int:apply_id>', methods=["GET"])
+@admin_or_has_permission(OperationPermission.DEVICE_CANCEL)
+def cancel(apply_id):
+    claims = get_jwt_claims()
+    applicant_id = claims['id']
+    apply_record = DeviceApplyRecord.query.filter_by(id=apply_id).first()
+    # 只能取消自己申请的
+    if apply_record and apply_record.applicant_id == applicant_id:
+        apply_record.status = 0
+        try:
+            db.session.add(apply_record)
+            db.session.commit()
+            return generate_response()
+        except Exception as e:
+            current_app.logger.error(str(e))
+            db.session.rollback()
+    return generate_response(code_msg=Code.APPLY_DEVICE_CANCEL_FAILED)

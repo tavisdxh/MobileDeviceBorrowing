@@ -36,6 +36,7 @@ class Code:
     APPLY_DEVICE_DUPLICATE = {'code': 3005, 'msg': '重复申请'}
     APPLY_DEVICE_RETURN_FAILED = {'code': 3006, 'msg': '归还失败'}
     APPLY_DEVICE_AUDIT_FAILED = {'code': 3007, 'msg': '审批失败'}
+    APPLY_DEVICE_CANCEL_FAILED = {'code': 3008, 'msg': '取消失败'}
 
 
 def generate_response(data=None, code=None, msg=None, code_msg=None):
