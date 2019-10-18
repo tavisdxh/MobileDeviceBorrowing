@@ -74,6 +74,27 @@ def test_apply_device_failed_duplicate_apply(admin_token, empty_device_apply_rec
     assert result.json()['msg'] == "重复申请"
 
 
+def test_modify_apply_device_successful(admin_token, empty_device_apply_record, execute_sql):
+    """
+    修改设备申请成功
+    :param admin_token:
+    :param empty_device_apply_record:
+    :return:
+    """
+    empty_device_apply_record(1, 1)
+    sql = """
+        INSERT INTO "main"."device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (5, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+        """
+    execute_sql(sql)
+    data = {
+        "apply_id": 5, "start_time": "2019-10-15 00:00:00", "end_time": "2019-10-30 23:59:59",
+        "application_desc": "修改申请"
+    }
+    result = http_post(apply_url.format(device_id=1), data=data, token=admin_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"
+
+
 def test_return_back_successful(admin_token, empty_device_apply_record, execute_sql):
     """
     归还设备成功

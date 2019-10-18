@@ -54,12 +54,13 @@ def apply(device_id):
     if device:
         # 有apply_id，则修改申请
         if request.json.get("apply_id"):
-            apply_record = DeviceApplyRecord.query.filter_by(apply_id=request.json.get("apply_id"), device_id=device_id,
-                                                             applicant_id=applicant_id).first()
+            apply_record = DeviceApplyRecord.query.filter_by(id=request.json.get("apply_id"), device_id=device_id,
+                                                             applicant_id=applicant_id, status=3).first()
             if apply_record:
                 apply_record.start_time = request.json.get("start_time")
                 apply_record.end_time = request.json.get("end_time")
                 apply_record.application_desc = request.json.get("application_desc")
+                apply_record.status = 1
                 details = "修改申请。"
             else:
                 return generate_response(code_msg=Code.APPLY_FAILED)
