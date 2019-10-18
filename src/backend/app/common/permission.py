@@ -26,3 +26,7 @@ class OperationPermission:
     DEVICE_RETURN = 'device_return'
     DEVICE_AUDIT = 'device_audit'
     DEVICE_CANCEL = 'device_cancel'
+
+    # 权限业务
+    ROLE_ADD = "role_add"
+    ROLE_UPDATE = "role_update"

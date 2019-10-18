@@ -45,6 +45,8 @@ INSERT INTO "permission" VALUES (10, 'device_return', '归还设备', NULL, '201
 INSERT INTO "permission" VALUES (11, 'device_audit', '审批设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (12, 'device_cancel', '取消申请', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (13, 'device_disable_device', '禁用设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (14, 'role_add', '添加角色', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (15, 'role_update', '修改角色', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role
@@ -93,6 +95,8 @@ INSERT INTO "role_permission" VALUES (2, 10);
 INSERT INTO "role_permission" VALUES (2, 11);
 INSERT INTO "role_permission" VALUES (2, 12);
 INSERT INTO "role_permission" VALUES (2, 13);
+INSERT INTO "role_permission" VALUES (2, 14);
+INSERT INTO "role_permission" VALUES (2, 15);
 
 -- ----------------------------
 -- Table structure for user

@@ -42,9 +42,11 @@ def create_app(config_name):
     from app.api.user.user import user_bp
     from app.api.device.device import device_bp
     from app.api.device.device_apply import device_apply_bp
+    from app.api.user.role import role_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/user')
     app.register_blueprint(device_bp, url_prefix='/api/device')
     app.register_blueprint(device_apply_bp, url_prefix='/api/device')
+    app.register_blueprint(role_bp, url_prefix='/api/role')
 
     return app
