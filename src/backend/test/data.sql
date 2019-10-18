@@ -44,6 +44,7 @@ INSERT INTO "permission" VALUES (9, 'device_apply', '申请设备', NULL, '2019-
 INSERT INTO "permission" VALUES (10, 'device_return', '归还设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (11, 'device_audit', '审批设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (12, 'device_cancel', '取消申请', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (13, 'device_disable_device', '禁用设备', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role
@@ -91,6 +92,7 @@ INSERT INTO "role_permission" VALUES (2, 9);
 INSERT INTO "role_permission" VALUES (2, 10);
 INSERT INTO "role_permission" VALUES (2, 11);
 INSERT INTO "role_permission" VALUES (2, 12);
+INSERT INTO "role_permission" VALUES (2, 13);
 
 -- ----------------------------
 -- Table structure for user
@@ -215,6 +217,21 @@ CREATE TABLE device_apply_record (
 	FOREIGN KEY(applicant_id) REFERENCES user (id),
 	FOREIGN KEY(apply_auditor_id) REFERENCES user (id),
 	FOREIGN KEY(return_auditor_id) REFERENCES user (id)
+);
+
+-- ----------------------------
+-- Table structure for device_log
+-- ----------------------------
+DROP TABLE IF EXISTS "device_log";
+CREATE TABLE device_log (
+	id INTEGER NOT NULL,
+	device_id INTEGER NOT NULL,
+	operator_id INTEGER,
+	details VARCHAR(500) NOT NULL,
+	create_time DATETIME,
+	update_time DATETIME,
+	PRIMARY KEY (id),
+	FOREIGN KEY(operator_id) REFERENCES user (id)
 );
 
 PRAGMA foreign_keys = true;

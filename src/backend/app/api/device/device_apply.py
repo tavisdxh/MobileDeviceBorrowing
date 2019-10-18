@@ -16,15 +16,16 @@ from app import generate_response, Code, db, redis_client
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.utils import admin_or_has_permission
-from app.model.device import Device, DeviceApplyRecord
+from app.model.device import Device, DeviceApplyRecord, DeviceLog
 
 device_apply_bp = Blueprint('device_apply_bp', __name__)
 
 
 class DeviceApplySchema(BaseSchema):
     class Meta(BaseSchema.Meta):
-        fields = ("start_time", "end_time", "application_desc")
+        fields = ("apply_id", "start_time", "end_time", "application_desc")
 
+    apply_id = fields.Integer()
     start_time = fields.DateTime()
     end_time = fields.DateTime()
 
@@ -51,23 +52,39 @@ def apply(device_id):
     applicant_id = claims['id']
     device = Device.query.filter_by(id=device_id).filter(Device.status != 0).first()
     if device:
-        apply_records = DeviceApplyRecord.query.filter_by(device_id=device_id, applicant_id=applicant_id).filter(
-            not_(DeviceApplyRecord.status.in_([0, 5]))).all()
-        # 同一用户不允许多次申请同一设备
-        if apply_records:
-            return generate_response(code_msg=Code.APPLY_DEVICE_DUPLICATE)
+        # 有apply_id，则修改申请
+        if request.json.get("apply_id"):
+            apply_record = DeviceApplyRecord.query.filter_by(apply_id=request.json.get("apply_id"), device_id=device_id,
+                                                             applicant_id=applicant_id).first()
+            if apply_record:
+                apply_record.start_time = request.json.get("start_time")
+                apply_record.end_time = request.json.get("end_time")
+                apply_record.application_desc = request.json.get("application_desc")
+                details = "修改申请。"
+            else:
+                return generate_response(code_msg=Code.APPLY_FAILED)
         else:
-            apply_record = DeviceApplyRecord(device_id=device_id, applicant_id=applicant_id,
-                                             start_time=request.json.get("start_time"),
-                                             end_time=request.json.get("end_time"),
-                                             application_desc=request.json.get("application_desc"))
-            try:
-                db.session.add(apply_record)
-                db.session.commit()
-                return generate_response()
-            except Exception as e:
-                current_app.logger.error(str(e))
-                db.session.rollback()
+            apply_records = DeviceApplyRecord.query.filter_by(device_id=device_id, applicant_id=applicant_id).filter(
+                not_(DeviceApplyRecord.status.in_([0, 5]))).all()
+            # 同一用户不允许多次申请同一设备
+            if apply_records:
+                return generate_response(code_msg=Code.APPLY_DEVICE_DUPLICATE)
+            else:
+                apply_record = DeviceApplyRecord(device_id=device_id, applicant_id=applicant_id,
+                                                 start_time=request.json.get("start_time"),
+                                                 end_time=request.json.get("end_time"),
+                                                 application_desc=request.json.get("application_desc"))
+                details = "申请设备。"
+        try:
+            db.session.add(apply_record)
+            db.session.commit()
+            device_log = DeviceLog(device_id=device.id, operator_id=applicant_id, details=details)
+            db.session.add(device_log)
+            db.session.commit()
+            return generate_response()
+        except Exception as e:
+            current_app.logger.error(str(e))
+            db.session.rollback()
             return generate_response(code_msg=Code.APPLY_FAILED)
     else:
         return generate_response(code_msg=Code.APPLY_DEVICE_NOT_READY)
@@ -84,6 +101,9 @@ def return_back(apply_id):
         apply_record.status = 4
         try:
             db.session.add(apply_record)
+            db.session.commit()
+            device_log = DeviceLog(device_id=apply_record.device_id, operator_id=applicant_id, details="归还设备。")
+            db.session.add(device_log)
             db.session.commit()
             return generate_response()
         except Exception as e:
@@ -119,26 +139,37 @@ def audit(apply_id):
             if device.owner_id == auditor_id:
                 audit_or_not = True
         if audit_or_not:
-            # 申请的记录
+            # 审批申请
             if apply_record.status == 1:
                 apply_record.apply_audit_reason = request.json.get("reason")
                 apply_record.apply_auditor_id = auditor_id
                 if request.json.get("approval") == 1:
                     apply_record.status = 2
                     device.current_user_id = apply_record.applicant_id
+                    # 若借用出去，且current_user!=owner，状态变成借用中。
+                    if device.current_user_id != device.owner_id:
+                        device.status = 2
+                    details = "通过{applicant}的申请".format(applicant=apply_record.applicant.realname)
                 else:
                     apply_record.status = 3
+                    details = "拒绝{applicant}的申请".format(applicant=apply_record.applicant.realname)
+            # 审批归还
             else:
                 apply_record.return_audit_reason = request.json.get("reason")
                 apply_record.return_auditor_id = auditor_id
                 if request.json.get("approval") == 1:
                     apply_record.status = 5
                     device.current_user_id = None
+                    details = "通过{applicant}的归还".format(applicant=apply_record.applicant.realname)
                 else:
                     apply_record.status = 6
+                    details = "拒绝{applicant}的归还".format(applicant=apply_record.applicant.realname)
             try:
                 db.session.add(apply_record)
                 db.session.add(device)
+                db.session.commit()
+                device_log = DeviceLog(device_id=device.id, operator_id=claims['id'], details=details)
+                db.session.add(device_log)
                 db.session.commit()
                 return generate_response()
             except Exception as e:
@@ -158,6 +189,9 @@ def cancel(apply_id):
         apply_record.status = 0
         try:
             db.session.add(apply_record)
+            db.session.commit()
+            device_log = DeviceLog(device_id=apply_record.device_id, operator_id=applicant_id, details="取消申请。")
+            db.session.add(device_log)
             db.session.commit()
             return generate_response()
         except Exception as e:

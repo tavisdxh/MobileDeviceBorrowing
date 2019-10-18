@@ -23,7 +23,7 @@ class Device(db.Model):
     asset_no = db.Column(db.String(100), comment='资产编号')
     root = db.Column(db.String(3), default="no", comment='是否root/越狱')
     location = db.Column(db.String(32), default="", comment='所在地')
-    status = db.Column(db.Integer, default=1, comment="状态，1：启用，0：禁用，2：使用中")
+    status = db.Column(db.Integer, default=1, comment="状态，1：启用，0：禁用，2：借用中")
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), comment="所属者")
     current_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), comment="当前使用者")
     owner = db.relationship("User", foreign_keys=[owner_id])
@@ -38,7 +38,7 @@ class Device(db.Model):
 
 
 class DeviceApplyRecord(db.Model):
-    __table__name = 'device'
+    __table__name = 'device_apply_record'
     __table_args__ = {"extend_existing": True, 'comment': '设备申请记录表'}
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     device_id = db.Column(db.Integer, nullable=False, comment="设备id")
@@ -64,3 +64,16 @@ class DeviceApplyRecord(db.Model):
         return '<DeviceApplyRecord id={id} device_id={device_id} applicant_id={applicant_id}>'.format(id=self.id,
                                                                                                       device_id=self.device_id,
                                                                                                       applicant_id=self.applicant_id)
+
+
+class DeviceLog(db.Model):
+    __table__name = 'device_log'
+    __table_args__ = {"extend_existing": True, 'comment': '设备日志表'}
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    device_id = db.Column(db.Integer, nullable=False, comment="设备id")
+    operator_id = db.Column(db.Integer, db.ForeignKey('user.id'), comment="操作者")
+    operator = db.relationship("User", foreign_keys=[operator_id])
+    details = db.Column(db.String(500), nullable=False, comment='详情')
+    create_time = db.Column(db.DateTime(), default=datetime.datetime.now, comment='创建时间')
+    update_time = db.Column(db.DateTime(), default=datetime.datetime.now, onupdate=datetime.datetime.now,
+                            comment='更新时间')

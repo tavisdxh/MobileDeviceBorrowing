@@ -33,10 +33,9 @@ def create_app(config_name):
     redis_client.init_app(app)
     jwt.init_app(app)
 
-    from app.test import hello_world
     # 引入model
     from app.model.user import User, Role, User_Role, Permission, Role_Permission
-    from app.model.device import Device, DeviceApplyRecord
+    from app.model.device import Device, DeviceApplyRecord, DeviceLog
 
     # 注册蓝图
     from app.api.auth.auth import auth_bp

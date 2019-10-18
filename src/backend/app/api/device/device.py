@@ -5,19 +5,24 @@ Desc：
 Author：TavisD 
 Time：2019/9/12 11:53
 """
-from flask import Blueprint, request, current_app
-from flask_jwt_extended import jwt_optional
-from marshmallow import fields
+import json
 
-from app import generate_response, Code, db
+from flask import Blueprint, request, current_app
+from flask_jwt_extended import jwt_optional, get_jwt_claims
+from marshmallow import fields
+from marshmallow.validate import OneOf
+
+from app import generate_response, Code, db, redis_client
 from app.api.user.user import UserSchema
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
 from app.common.utils import admin_or_has_permission, delete_false_empty_page_args
-from app.model.device import Device, DeviceApplyRecord
+from app.model.device import Device, DeviceApplyRecord, DeviceLog
 
 device_bp = Blueprint('device_bp', __name__)
+
+device_status = {0: "禁用", 1: "启用", 2: "借用中"}
 
 
 class DeviceSchema(BaseSchema):
@@ -37,7 +42,12 @@ class DeviceSchema(BaseSchema):
     current_user = fields.Nested(UserSchema, only=("id", "realname"))
 
 
+class DisableDeviceSchema(BaseSchema):
+    disable = fields.Str(validate=OneOf(["true", "false"]))
+
+
 device_schema = DeviceSchema()
+disable_device_schema = DisableDeviceSchema()
 
 
 @device_bp.route("/add_device", methods=["POST"])
@@ -65,6 +75,16 @@ def add_device():
         db.session.add(device)
         db.session.commit()
         device_dump = device_schema.dump(device)
+        # 添加日志
+        claims = get_jwt_claims()
+        details = "添加设备。状态：{status}，".format(status=device_status[device.status])
+        if device.owner:
+            details += "所属者：{owner}，".format(owner=device.owner.username)
+        if device.current_user:
+            details += "当前使用者：{current_user}".format(current_user=device.current_user.realname)
+        device_log = DeviceLog( device_id=device.id, operator_id=claims['id'], details=details)
+        db.session.add(device_log)
+        db.session.commit()
         return generate_response(data=device_dump)
     except Exception as e:
         current_app.logger.error(str(e))
@@ -91,6 +111,16 @@ def update_device(device_id):
                     record.status = 0
                     db.session.add(record)
                     db.session.commit()
+        # 变更日志
+        details = "修改设备。"
+        if request.json.get("owner") and request.json.get("owner").get("id") != exist_device.owner_id:
+            details += "所属者：{owner} ==> {new_owner}，".format(owner=exist_device.owner.username,
+                                                             new_owner=request.json.get("owner").get("realname"))
+        if request.json.get("current_user") and request.json.get("current_user").get(
+                "id") != exist_device.current_user_id:
+            details += "当前使用者：{current_user} ==> {new_current_user}".format(
+                current_user=exist_device.current_user.username,
+                new_current_user=request.json.get("current_user").get("realname"))
         exist_device.type = request.json.get("type")
         exist_device.brand = request.json.get("brand")
         exist_device.model = request.json.get("model")
@@ -110,6 +140,11 @@ def update_device(device_id):
             db.session.add(exist_device)
             db.session.commit()
             device_dump = device_schema.dump(exist_device)
+            claims = get_jwt_claims()
+            device_log = DeviceLog(device_id=exist_device.id, operator_id=claims['id'],
+                                   details=details)
+            db.session.add(device_log)
+            db.session.commit()
             return generate_response(data=device_dump)
         except Exception as e:
             current_app.logger.error(str(e))
@@ -149,3 +184,37 @@ def get_devices():
             error_out=False)
     return generate_page_response(data=device_schema.dump(pagination.items, many=True), total=pagination.total,
                                   per_page=pagination.per_page, page=pagination.page, page_count=pagination.pages)
+
+
+@device_bp.route('/disable_device/<int:device_id>', methods=["POST"])
+@admin_or_has_permission(OperationPermission.DEVICE_DISABLE_DEVICE)
+def disable_device(device_id):
+    validate_result = disable_device_schema.validate(request.json)
+    if validate_result:
+        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
+    device = Device.query.filter_by(id=device_id).first()
+    if device:
+        claims = get_jwt_claims()
+        user_id = claims['id']
+        result = redis_client.hget("user_{user_id}".format(user_id=user_id), "roles")
+        if result:
+            roles = json.loads(result.decode('utf-8'))
+            if "admin" in roles or device.owner_id == user_id:
+                if request.json.get("disable") == "true":
+                    details = "禁用设备。"
+                    device.status = 0
+                else:
+                    details = "启用设备。"
+                    device.status = 1
+                try:
+                    db.session.add(device)
+                    db.session.commit()
+                    device_log = DeviceLog(device_id=device.id, operator_id=user_id,
+                                           details=details)
+                    db.session.add(device_log)
+                    db.session.commit()
+                    return generate_response()
+                except Exception as e:
+                    current_app.logger.error(str(e))
+                    db.session.rollback()
+    return generate_response(code_msg=Code.DISABLE_DEVICE_FAILED)

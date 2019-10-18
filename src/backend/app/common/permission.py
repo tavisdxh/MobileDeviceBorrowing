@@ -19,6 +19,7 @@ class OperationPermission:
     DEVICE_UPDATE_DEVICE = 'device_update_device'
     DEVICE_GET_DEVICE = 'device_get_device'
     DEVICE_GET_DEVICES = 'device_get_devices'
+    DEVICE_DISABLE_DEVICE = 'device_disable_device'
 
     # device申请、归还、审批
     DEVICE_APPLY = 'device_apply'
