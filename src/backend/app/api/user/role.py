@@ -13,7 +13,7 @@ from app import generate_response, Code, db
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
-from app.common.utils import admin_or_has_permission_self, delete_false_empty_page_args
+from app.common.utils import admin_or_has_permission_self, delete_false_empty_page_args, validate_request
 from app.model.user import Role
 
 role_bp = Blueprint('role_bp', __name__)
@@ -51,10 +51,8 @@ roles_schema = RolesSchema()
 
 @role_bp.route("/add", methods=['POST'])
 @admin_or_has_permission_self(OperationPermission.ROLE_ADD)
+@validate_request(role_schema, "json")
 def add_role():
-    validate_result = role_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     role = Role.query.filter_by(name=request.json.get("name")).first()
     if role:
         return generate_response(code_msg=Code.ROLE_EXIST)
@@ -71,10 +69,8 @@ def add_role():
 
 @role_bp.route("/update/<int:role_id>", methods=['POST'])
 @admin_or_has_permission_self(OperationPermission.ROLE_ADD)
+@validate_request(role_schema, "json")
 def update_role(role_id):
-    validate_result = role_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     role = Role.query.filter_by(id=role_id).first()
     if role:
         if role.name == request.json.get("name"):
@@ -117,10 +113,8 @@ def get_role(role_id):
 
 @role_bp.route("/get_roles")
 @admin_or_has_permission_self(OperationPermission.ROLE_GET_ROLES)
+@validate_request(roles_schema, "args")
 def get_roles():
-    validate_result = roles_schema.validate(request.args)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     query_dict = {}
     query_dict.update(delete_false_empty_page_args(request.args.to_dict()))
     pagination = Role.query.filter_by(**query_dict).order_by(Role.id).paginate(page=request.args.get("page", type=int),

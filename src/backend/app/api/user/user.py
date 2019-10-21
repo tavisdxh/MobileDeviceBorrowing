@@ -14,7 +14,8 @@ from app import generate_response, Code, db, redis_client
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
-from app.common.utils import delete_false_empty_page_args, admin_or_has_permission, admin_or_has_permission_self
+from app.common.utils import delete_false_empty_page_args, admin_or_has_permission, admin_or_has_permission_self, \
+    validate_request
 from app.model.user import User
 
 user_bp = Blueprint('user_bp', __name__)
@@ -28,9 +29,6 @@ class UserSchema(BaseSchema):
     username = fields.Str(required=True, validate=Length(min=4, max=32))
     realname = fields.Str(required=True, validate=Length(min=2, max=32))
     email = fields.Email(required=True)
-
-
-user_schema = UserSchema()
 
 
 class PasswordSchema(BaseSchema):
@@ -56,6 +54,12 @@ class UsersSchema(BaseSchema):
     per_page = fields.Number(required=True, load_only=True)
 
 
+user_schema = UserSchema()
+update_user_schema = UserSchema()
+password_schema = PasswordSchema()
+users_schema = UsersSchema()
+
+
 @user_bp.route('/get_user/<int:user_id>')
 @admin_or_has_permission_self(OperationPermission.USER_GET_USER)
 def get_user(user_id):
@@ -67,11 +71,8 @@ def get_user(user_id):
 
 @user_bp.route('/update_user/<int:user_id>', methods=['POST'])
 @admin_or_has_permission_self(OperationPermission.USER_UPDATE_USER)
+@validate_request(update_user_schema, "json")
 def update_user(user_id):
-    update_user_schema = UserSchema()
-    validate_result = update_user_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     user = User.query.filter_by(id=user_id).first()
     if user:
         user.username = request.json.get("username", user.username)
@@ -95,11 +96,8 @@ def update_user(user_id):
 
 @user_bp.route('/update_password/<int:user_id>', methods=['POST'])
 @admin_or_has_permission_self(OperationPermission.USER_UPDATE_PASSWORD)
+@validate_request(password_schema, "json")
 def update_password(user_id):
-    password_schema = PasswordSchema()
-    validate_result = password_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     claims = get_jwt_claims()
     if user_id != claims['id']:
         return generate_response(code_msg=Code.PERMISSION_DENIED), 403
@@ -120,11 +118,8 @@ def update_password(user_id):
 
 @user_bp.route('/get_users')
 @admin_or_has_permission(OperationPermission.USER_GET_USERS)
+@validate_request(users_schema, "args")
 def get_users():
-    users_schema = UsersSchema()
-    validate_result = users_schema.validate(request.args)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     query_dict = {}
     query_dict.update(delete_false_empty_page_args(request.args.to_dict()))
     pagination = User.query.filter_by(**query_dict).order_by(User.id).paginate(page=request.args.get("page", type=int),

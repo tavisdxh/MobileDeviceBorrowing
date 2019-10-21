@@ -15,7 +15,7 @@ from sqlalchemy import not_
 from app import generate_response, Code, db, redis_client
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
-from app.common.utils import admin_or_has_permission
+from app.common.utils import admin_or_has_permission, validate_request
 from app.model.device import Device, DeviceApplyRecord, DeviceLog
 
 device_apply_bp = Blueprint('device_apply_bp', __name__)
@@ -44,10 +44,8 @@ audit_schema = DeviceAuditSchema()
 
 @device_apply_bp.route('/apply/<int:device_id>', methods=["POST"])
 @admin_or_has_permission(OperationPermission.DEVICE_APPLY)
+@validate_request(apply_schema, "json")
 def apply(device_id):
-    validate_result = apply_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     claims = get_jwt_claims()
     applicant_id = claims['id']
     device = Device.query.filter_by(id=device_id).filter(Device.status != 0).first()
@@ -115,10 +113,8 @@ def return_back(apply_id):
 
 @device_apply_bp.route('/audit/<int:apply_id>', methods=["POST"])
 @admin_or_has_permission(OperationPermission.DEVICE_AUDIT)
+@validate_request(audit_schema, "json")
 def audit(apply_id):
-    validate_result = audit_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     claims = get_jwt_claims()
     auditor_id = claims['id']
     apply_record = DeviceApplyRecord.query.filter_by(id=apply_id).first()

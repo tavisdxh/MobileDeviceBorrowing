@@ -8,7 +8,7 @@ Time：2019-8-22 12:14
 import json
 from functools import wraps
 
-from flask import current_app
+from flask import current_app, request
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims
 
 from app import redis_client, generate_response, Code
@@ -125,6 +125,23 @@ def admin_or_has_permission_self(permission):
             if permission in permissions and "user_id" in kwargs.keys() and kwargs['user_id'] == claims['id']:
                 return func(*args, **kwargs)
             return generate_response(code_msg=Code.PERMISSION_DENIED), 403
+
+        wrapper.__name__ = func.__name__
+        return wrapper
+
+    return decorate
+
+
+def validate_request(schema, location):
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if location in ["args", "json"]:
+                validate_result = schema.validate(request.__getattr__(location))
+                if validate_result:
+                    return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
+                return func(*args, **kwargs)
+            return generate_response(data="request非args、json来源", code_msg=Code.PARAMS_ERROR), 400
 
         wrapper.__name__ = func.__name__
         return wrapper

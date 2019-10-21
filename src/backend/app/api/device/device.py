@@ -17,7 +17,7 @@ from app.api.user.user import UserSchema
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
-from app.common.utils import admin_or_has_permission, delete_false_empty_page_args
+from app.common.utils import admin_or_has_permission, delete_false_empty_page_args, validate_request
 from app.model.device import Device, DeviceApplyRecord, DeviceLog
 
 device_bp = Blueprint('device_bp', __name__)
@@ -52,10 +52,8 @@ disable_device_schema = DisableDeviceSchema()
 
 @device_bp.route("/add_device", methods=["POST"])
 @admin_or_has_permission(OperationPermission.DEVICE_ADD_DEVICE)
+@validate_request(device_schema, "json")
 def add_device():
-    validate_result = device_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     device = Device(type=request.json.get("type"),
                     brand=request.json.get("brand"),
                     model=request.json.get("model"),
@@ -82,7 +80,7 @@ def add_device():
             details += "所属者：{owner}，".format(owner=device.owner.username)
         if device.current_user:
             details += "当前使用者：{current_user}".format(current_user=device.current_user.realname)
-        device_log = DeviceLog( device_id=device.id, operator_id=claims['id'], details=details)
+        device_log = DeviceLog(device_id=device.id, operator_id=claims['id'], details=details)
         db.session.add(device_log)
         db.session.commit()
         return generate_response(data=device_dump)
@@ -94,10 +92,8 @@ def add_device():
 
 @device_bp.route('/update_device/<int:device_id>', methods=["POST"])
 @admin_or_has_permission(OperationPermission.DEVICE_UPDATE_DEVICE)
+@validate_request(device_schema, "json")
 def update_device(device_id):
-    validate_result = device_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     exist_device = Device.query.filter_by(id=device_id).first()
     if exist_device:
         # 若当前使用者有变更，需要取消原有用户对该设备的申请记录
@@ -188,10 +184,8 @@ def get_devices():
 
 @device_bp.route('/disable_device/<int:device_id>', methods=["POST"])
 @admin_or_has_permission(OperationPermission.DEVICE_DISABLE_DEVICE)
+@validate_request(disable_device_schema, "json")
 def disable_device(device_id):
-    validate_result = disable_device_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     device = Device.query.filter_by(id=device_id).first()
     if device:
         claims = get_jwt_claims()

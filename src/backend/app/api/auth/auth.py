@@ -14,7 +14,7 @@ from app import db, redis_client
 from app.api.user.user import UserSchema, user_schema
 from app.common.base_schema import BaseSchema
 from app.common.response import generate_response, Code
-from app.common.utils import get_permissions_from_redis, get_roles_from_redis
+from app.common.utils import get_permissions_from_redis, get_roles_from_redis, validate_request
 from app.model.user import User, Role
 
 auth_bp = Blueprint('auth_bp', __name__)
@@ -42,12 +42,13 @@ class RegisterSchema(UserSchema):
             raise ValidationError("password must be equivalent")
 
 
+register_schema = RegisterSchema()
+login_schema = LoginSchema()
+
+
 @auth_bp.route('/register', methods=['POST'])
+@validate_request(register_schema, "json")
 def register():
-    register_schema = RegisterSchema()
-    validate_result = register_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     exist_user = User.query.filter_by(username=request.json.get("username")).first()
     if exist_user:
         return generate_response(code_msg=Code.USER_EXIST)
@@ -76,11 +77,8 @@ def register():
 
 
 @auth_bp.route('/login', methods=['POST'])
+@validate_request(login_schema, "json")
 def login():
-    login_schema = LoginSchema()
-    validate_result = login_schema.validate(request.json)
-    if validate_result:
-        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     exist_user = User.query.filter_by(username=request.json.get("username")).first()
     if exist_user:
         if exist_user.password == request.json.get("password"):
