@@ -122,6 +122,9 @@ def update_password(user_id):
 @admin_or_has_permission(OperationPermission.USER_GET_USERS)
 def get_users():
     users_schema = UsersSchema()
+    validate_result = users_schema.validate(request.args)
+    if validate_result:
+        return generate_response(data=validate_result, code_msg=Code.PARAMS_ERROR), 400
     query_dict = {}
     query_dict.update(delete_false_empty_page_args(request.args.to_dict()))
     pagination = User.query.filter_by(**query_dict).order_by(User.id).paginate(page=request.args.get("page", type=int),

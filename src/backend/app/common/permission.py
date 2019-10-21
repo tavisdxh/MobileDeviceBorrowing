@@ -30,3 +30,6 @@ class OperationPermission:
     # 权限业务
     ROLE_ADD = "role_add"
     ROLE_UPDATE = "role_update"
+    ROLE_DELETE = "role_delete"
+    ROLE_GET = "role_get"
+    ROLE_GET_ROLES = "role_get_roles"

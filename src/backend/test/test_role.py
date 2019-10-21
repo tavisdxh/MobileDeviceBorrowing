@@ -10,6 +10,8 @@ from test.utils import HOST, http_post, http_get
 add_role_url = HOST + "role/add"
 update_role_url = HOST + "role/update/{role_id}"
 delete_role_url = HOST + "role/delete/{role_id}"
+get_role_url = HOST + "role/get/{role_id}"
+get_roles_url = HOST + "role/get_roles"
 
 
 def test_add_role_successful(admin_token, execute_sql):
@@ -131,3 +133,52 @@ def test_delete_role_failed(admin_token, execute_sql):
     result = http_get(delete_role_url.format(role_id=994), token=admin_token)
     assert result.json()['code'] == 4002
     assert result.json()['msg'] == "角色不存在"
+
+
+def test_get_role_successful(admin_token):
+    """
+    获取角色详情成功
+    :param admin_token:
+    :return:
+    """
+    result = http_get(get_role_url.format(role_id=2), token=admin_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"
+    assert result.json()['data']['id'] == 2
+
+
+def test_get_role_failed(admin_token):
+    """
+    获取角色信息失败
+    :param admin_token:
+    :return:
+    """
+    result = http_get(get_role_url.format(role_id=993), token=admin_token)
+    assert result.json()['code'] == 4002
+    assert result.json()['msg'] == "角色不存在"
+
+
+def test_get_roles_successful(admin_token):
+    """
+    获取角色列表成功
+    :param admin_token:
+    :return:
+    """
+    result = http_get(get_roles_url + "?page=1&per_page=2", token=admin_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"
+    assert len(result.json()['data']) == 2
+    assert result.json()['per_page'] == 2
+
+
+def test_get_roles_successful_empty(admin_token):
+    """
+    获取角色列表成功，空列表
+    :param admin_token:
+    :return:
+    """
+    result = http_get(get_roles_url + "?page=10&per_page=10", token=admin_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"
+    assert len(result.json()['data']) == 0
+    assert result.json()['per_page'] == 10
