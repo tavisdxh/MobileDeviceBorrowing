@@ -70,3 +70,17 @@ def update_role(role_id):
             current_app.logger.error(str(e))
             db.session.rollback()
     return generate_response(code_msg=Code.ROLE_NOT_EXIST)
+
+
+@role_bp.route("/delete/<int:role_id>")
+def delete_role(role_id):
+    role = Role.query.filter_by(id=role_id).first()
+    if role:
+        try:
+            db.session.delete(role)
+            db.session.commit()
+            return generate_response()
+        except Exception as e:
+            current_app.logger.error(str(e))
+            db.session.rollback()
+    return generate_response(code_msg=Code.ROLE_NOT_EXIST)

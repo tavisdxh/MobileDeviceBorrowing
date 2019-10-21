@@ -16,7 +16,7 @@ from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 def set_log(app, level):
     Path(__file__).cwd().joinpath("logs").mkdir(parents=True, exist_ok=True)
-    file_log_handler = ConcurrentRotatingFileHandler("logs/log", maxBytes=50 * 1024 * 1024, backupCount=5,
+    file_log_handler = ConcurrentRotatingFileHandler("logs/log", maxBytes=5 * 1024 * 1024, backupCount=5,
                                                      encoding="UTF-8")
     formatter = logging.Formatter("[%(asctime)s][%(filename)s:%(lineno)d][%(levelname)s]%(message)s")
     file_log_handler.setFormatter(formatter)
