@@ -7,33 +7,32 @@ Time：2019/10/18 17:01
 """
 from flask import Blueprint, request, current_app
 from marshmallow import fields
-from marshmallow.validate import Length
+from marshmallow.validate import Length, OneOf
 
 from app import generate_response, Code, db
 from app.common.base_schema import BaseSchema
 from app.common.permission import OperationPermission
 from app.common.response import generate_page_response
 from app.common.utils import admin_or_has_permission_self, delete_false_empty_page_args, validate_request
-from app.model.user import Role
+from app.model.user import Role, Permission
 
 role_bp = Blueprint('role_bp', __name__)
 
 
+class PermissionSchema(BaseSchema):
+    class Meta(BaseSchema.Meta):
+        fields = ("id", "path", "name", "desc", "create_time", "update_time")
+
+
 class RoleSchema(BaseSchema):
     class Meta(BaseSchema.Meta):
-        fields = ("id", "name", "desc", "permissions", "create_time", "update_time")
-
-    def dump_permissions(self, obj):
-        permissions = []
-        if obj.permissions:
-            for permission in obj.permissions:
-                permissions.append(permission.id)
-        return permissions
+        fields = ("id", "name", "desc", "assigned_permissions", "available_permissions", "create_time", "update_time")
 
     id = fields.Integer(dump_only=True)
     name = fields.Str(required=True, validate=Length(max=20))
     desc = fields.Str(validate=Length(max=50))
-    permissions = fields.Method("dump_permissions")
+    assigned_permissions = fields.Nested(PermissionSchema, only=['id', 'name'], many=True)
+    available_permissions = fields.Nested(PermissionSchema, only=['id', 'name'], many=True)
 
 
 class RolesSchema(RoleSchema):
@@ -45,8 +44,17 @@ class RolesSchema(RoleSchema):
     per_page = fields.Integer(required=True)
 
 
+class AssignedSchema(BaseSchema):
+    class Meta(BaseSchema.Meta):
+        fields = ("action", "permission_ids")
+
+    action = fields.Str(required=True, validate=OneOf(["add", "remove"]))
+    permission_ids = fields.List(fields.Integer(), required=True)
+
+
 role_schema = RoleSchema()
 roles_schema = RolesSchema()
+assigned_schema = AssignedSchema()
 
 
 @role_bp.route("/add", methods=['POST'])
@@ -107,6 +115,13 @@ def delete_role(role_id):
 def get_role(role_id):
     role = Role.query.filter_by(id=role_id).first()
     if role:
+        available_permissions = Permission.query.all()
+        if role.permissions:
+            for permission in role.permissions:
+                if permission in available_permissions:
+                    available_permissions.remove(permission)
+        setattr(role, "assigned_permissions", role.permissions)
+        setattr(role, "available_permissions", available_permissions)
         return generate_response(data=role_schema.dump(role))
     return generate_response(code_msg=Code.ROLE_NOT_EXIST)
 
@@ -123,3 +138,38 @@ def get_roles():
                                                                                error_out=False)
     return generate_page_response(data=role_schema.dump(pagination.items, many=True), total=pagination.total,
                                   per_page=pagination.per_page, page=pagination.page, page_count=pagination.pages)
+
+
+@role_bp.route("/assign_permission/<int:role_id>", methods=['POST'])
+@admin_or_has_permission_self(OperationPermission.ROLE_ASSIGNED_PERMISSION)
+@validate_request(assigned_schema, "json")
+def assign(role_id):
+    role = Role.query.filter_by(id=role_id).first()
+    if role:
+        if request.json.get("permission_ids"):
+            change_permissions = Permission.query.filter(Permission.id.in_(request.json.get("permission_ids"))).all()
+            assigned_permissions = set(role.permissions)
+            if request.json.get("action") == "add":
+                for change_permission in change_permissions:
+                    assigned_permissions.add(change_permission)
+            elif request.json.get("action") == "remove":
+                for change_permission in change_permissions:
+                    if change_permission in role.permissions:
+                        assigned_permissions.remove(change_permission)
+            role.permissions = list(sorted(assigned_permissions, key=lambda x: x.id))
+        available_permissions = Permission.query.all()
+        if role.permissions:
+            for permission in role.permissions:
+                if permission in available_permissions:
+                    available_permissions.remove(permission)
+        try:
+            db.session.add(role)
+            db.session.commit()
+        except Exception as e:
+            current_app.logger.error(str(e))
+            db.session.rollback()
+            return generate_response(code_msg=Code.ROLE_ASSIGN_FAILED)
+        setattr(role, "assigned_permissions", role.permissions)
+        setattr(role, "available_permissions", available_permissions)
+        return generate_response(data=role_schema.dump(role))
+    return generate_response(code_msg=Code.ROLE_NOT_EXIST)

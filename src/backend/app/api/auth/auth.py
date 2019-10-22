@@ -98,6 +98,11 @@ def login():
 @auth_bp.route('/logout')
 @jwt_required
 def logout():
-    id = get_raw_jwt()['identity']
-    redis_client.set("user_token_expired_{id}".format(id=id), 'true', ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+    user_id = get_raw_jwt()['identity']
+    # revoked token
+    redis_client.set("user_token_expired_{user_id}".format(user_id=user_id), 'true',
+                     ex=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+    # remove permissions roles
+    redis_client.hdel("user_{user_id}".format(user_id=user_id), "permissions")
+    redis_client.hdel("user_{user_id}".format(user_id=user_id), "roles")
     return generate_response()

@@ -50,6 +50,7 @@ INSERT INTO "permission" VALUES (15, 'role_update', '修改角色', NULL, '2019-
 INSERT INTO "permission" VALUES (16, 'role_delete', '删除角色', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (17, 'role_get', '获取角色信息', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "permission" VALUES (18, 'role_get_roles', '获取角色列表', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "permission" VALUES (19, 'role_assign_permission', '分配角色权限', NULL, '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role
@@ -69,6 +70,7 @@ CREATE TABLE "role" (
 -- ----------------------------
 INSERT INTO "role" VALUES (1, 'admin', '管理员', '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 INSERT INTO "role" VALUES (2, 'normal', '普通用户', '2019-09-10 14:02:43', '2019-09-10 14:02:43');
+INSERT INTO "role" VALUES (3, '角色1', '角色1', '2019-09-10 14:02:43', '2019-09-10 14:02:43');
 
 -- ----------------------------
 -- Table structure for role_permission
@@ -103,6 +105,7 @@ INSERT INTO "role_permission" VALUES (2, 15);
 INSERT INTO "role_permission" VALUES (2, 16);
 INSERT INTO "role_permission" VALUES (2, 17);
 INSERT INTO "role_permission" VALUES (2, 18);
+INSERT INTO "role_permission" VALUES (2, 19);
 
 -- ----------------------------
 -- Table structure for user

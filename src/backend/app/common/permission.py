@@ -33,3 +33,4 @@ class OperationPermission:
     ROLE_DELETE = "role_delete"
     ROLE_GET = "role_get"
     ROLE_GET_ROLES = "role_get_roles"
+    ROLE_ASSIGNED_PERMISSION = "role_assign_permission"

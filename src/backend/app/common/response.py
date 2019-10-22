@@ -42,7 +42,8 @@ class Code:
     # 权限业务
     ROLE_EXIST = {'code': 4000, 'msg': '角色已存在'}
     ROLE_ADD_FAILED = {'code': 4001, 'msg': '添加角色失败'}
-    ROLE_NOT_EXIST  = {'code': 4002, 'msg': '角色不存在'}
+    ROLE_NOT_EXIST = {'code': 4002, 'msg': '角色不存在'}
+    ROLE_ASSIGN_FAILED = {'code': 4003, 'msg': '分配角色权限失败'}
 
 
 def generate_response(data=None, code=None, msg=None, code_msg=None):

@@ -12,6 +12,7 @@ update_role_url = HOST + "role/update/{role_id}"
 delete_role_url = HOST + "role/delete/{role_id}"
 get_role_url = HOST + "role/get/{role_id}"
 get_roles_url = HOST + "role/get_roles"
+assign_permission_url = HOST + "role/assign_permission/{role_id}"
 
 
 def test_add_role_successful(admin_token, execute_sql):
@@ -182,3 +183,58 @@ def test_get_roles_successful_empty(admin_token):
     assert result.json()['msg'] == "ok"
     assert len(result.json()['data']) == 0
     assert result.json()['per_page'] == 10
+
+
+def test_assign_permission_add_successful(admin_token, execute_sql):
+    """
+    添加角色权限成功
+    :param admin_token:
+    :param execute_sql:
+    :return:
+    """
+    sql1 = """
+    DELETE FROM role_permission where role_id=3;
+    """
+    sql2 = """
+    INSERT INTO "main"."role_permission"("role_id", "permission_id") VALUES (3, 1);
+    """
+    execute_sql(sql1)
+    execute_sql(sql2)
+    data = {"action": "add", "permission_ids": [2, 5]}
+    result = http_post(assign_permission_url.format(role_id=3), data=data, token=admin_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"
+    assert len(result.json()["data"]["assigned_permissions"]) == 3
+    assert result.json()["data"]["assigned_permissions"][0]["id"] == 1
+    assert result.json()["data"]["assigned_permissions"][1]["id"] == 2
+    assert result.json()["data"]["assigned_permissions"][2]["id"] == 5
+    assert 2 not in [x["id"] for x in result.json()["data"]["available_permissions"]]
+    assert 5 not in [x["id"] for x in result.json()["data"]["available_permissions"]]
+
+
+def test_assign_permission_remove_successful(admin_token, execute_sql):
+    """
+    删除角色权限成功
+    :param admin_token:
+    :param execute_sql:
+    :return:
+    """
+    sql1 = """
+    DELETE FROM role_permission where role_id=3;
+    """
+    sql2 = """
+    INSERT INTO "main"."role_permission"("role_id", "permission_id") VALUES (3, 1);
+    """
+    sql3 = """
+    INSERT INTO "main"."role_permission"("role_id", "permission_id") VALUES (3, 4);
+    """
+    execute_sql(sql1)
+    execute_sql(sql2)
+    execute_sql(sql3)
+    data = {"action": "remove", "permission_ids": [1, 5]}
+    result = http_post(assign_permission_url.format(role_id=3), data=data, token=admin_token)
+    assert result.json()['code'] == 0
+    assert result.json()['msg'] == "ok"
+    assert len(result.json()["data"]["assigned_permissions"]) == 1
+    assert result.json()["data"]["assigned_permissions"][0]["id"] == 4
+    assert 1 in [x["id"] for x in result.json()["data"]["available_permissions"]]
