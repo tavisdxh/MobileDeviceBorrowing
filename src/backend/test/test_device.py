@@ -173,7 +173,7 @@ def test_admin_disable_device_successful(admin_token, execute_sql):
     :return:
     """
     sql = """
-    INSERT INTO "main"."device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (10, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+    INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (10, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
     """
     execute_sql(sql)
     data = {"disable": "true"}
@@ -190,7 +190,7 @@ def test_common_user_disable_device_successful(test1_token, execute_sql):
     :return:
     """
     sql = """
-    INSERT INTO "main"."device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (11, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+    INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (11, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
     """
     execute_sql(sql)
     data = {"disable": "true"}
@@ -207,7 +207,7 @@ def test_common_user_disable_device_failed(test1_token, execute_sql):
     :return:
     """
     sql = """
-        INSERT INTO "main"."device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (12, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 3, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+        INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (12, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 3, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
         """
     execute_sql(sql)
     data = {"disable": "true"}
@@ -224,7 +224,7 @@ def test_admin_enable_device_successful(admin_token, execute_sql):
     :return:
     """
     sql = """
-        INSERT INTO "main"."device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (13, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 0, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+        INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (13, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 0, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
         """
     execute_sql(sql)
     data = {"disable": "false"}
