@@ -13,8 +13,8 @@ before_install:
   - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('123456') where User='root'; update user set plugin='mysql_native_password';FLUSH PRIVILEGES;"
   - sudo mysql_upgrade -u root -p123456
   - sudo systemctl restart mysql
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS `mobile_device_borrowing` default character SET utf8mb4 ;'
-  - mysql -u root  < backend/mysql/docker-entrypoint-initdb.d/02_table_structure.sql
+  - mysql -uroot -p123456 -e 'CREATE DATABASE IF NOT EXISTS `mobile_device_borrowing` default character SET utf8mb4 ;'
+  - mysql -uroot -p123456 < backend/mysql/docker-entrypoint-initdb.d/02_table_structure.sql
   - cd backend/src
 install:
   - pip install -r requirements.txt
