@@ -6,26 +6,31 @@ Author：TavisD
 Time：2019/9/11 10:53
 """
 import sqlite3
+import subprocess
 from pathlib import Path
 
 import pytest
+import redis
+import sqlalchemy
+from sqlalchemy import create_engine
 
 from app.model.user import User
+from config import DevConfig
 from test.utils import http_post, HOST, get_db_session
-
-db_file = str(Path(__file__).parent.parent.joinpath("dev.db"))
 
 
 @pytest.fixture(scope="module", autouse=True)
 def init():
-    print("\nInitializing db..........")
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    with open(str(Path(__file__).parent.joinpath("data.sql")), encoding="utf-8") as f:
-        cursor.executescript(f.read())
-        conn.commit()
-    cursor.close()
-    conn.close()
+    # init db
+    data_file = str(Path(__file__).parent.joinpath("data.sql"))
+    engine = create_engine(DevConfig.SQLALCHEMY_DATABASE_URI)
+    connection = engine.connect()
+    with open(data_file, encoding="utf-8") as f:
+        for line in f.readlines():
+            connection.execute(line[:-1])
+    # remove redis record
+    r = redis.StrictRedis(host=DevConfig.REDIS_HOST)
+    r.flushall()
 
 
 @pytest.fixture(scope="module")

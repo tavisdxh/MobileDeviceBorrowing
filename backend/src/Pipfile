@@ -6,18 +6,19 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "*"
-flask-sqlalchemy = "*"
-flask-migrate = "*"
-flask-script = "*"
-pymysql = "*"
-requests = "*"
-flask-apscheduler = "*"
-flask-redis = "*"
-flask-jwt-extended = "*"
-marshmallow = "*"
 concurrent-log-handler = "*"
+flask = "*"
+flask-apscheduler = "*"
+flask-jwt-extended = "*"
+flask-migrate = "*"
+flask-redis = "*"
+flask-script = "*"
+flask-sqlalchemy = "*"
+marshmallow = "*"
+pymysql = "*"
 pytest = "*"
+requests = "*"
+
 
 [requires]
 python_version = "3.7"

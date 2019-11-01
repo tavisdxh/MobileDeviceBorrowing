@@ -18,10 +18,10 @@ cancel_url = HOST + "device/cancel/{apply_id}"
 def empty_device_apply_record():
     def _empty(device_id, apply_id=None):
         session = get_db_session()
-        session.execute("delete from main.device_apply_record where device_id={device_id}".format(device_id=device_id))
+        session.execute("delete from device_apply_record where device_id={device_id}".format(device_id=device_id))
         session.commit()
         if apply_id:
-            session.execute("delete from main.device_apply_record where id={id}".format(id=apply_id))
+            session.execute("delete from device_apply_record where id={id}".format(id=apply_id))
             session.commit()
 
     return _empty
@@ -79,11 +79,12 @@ def test_modify_apply_device_successful(admin_token, empty_device_apply_record, 
     修改设备申请成功
     :param admin_token:
     :param empty_device_apply_record:
+    :param execute_sql:
     :return:
     """
     empty_device_apply_record(1, 1)
     sql = """
-        INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (5, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+        INSERT INTO device_apply_record VALUES (5, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
         """
     execute_sql(sql)
     data = {
@@ -105,7 +106,7 @@ def test_return_back_successful(admin_token, empty_device_apply_record, execute_
     """
     empty_device_apply_record(1, 1)
     sql = """
-    INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 6, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 6, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
     """
     execute_sql(sql)
     result = http_get(return_url.format(apply_id=1), token=admin_token)
@@ -136,7 +137,7 @@ def test_return_back_failed_wrong_status(admin_token, empty_device_apply_record,
     """
     empty_device_apply_record(1, 1)
     sql = """
-        INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+        INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
         """
     execute_sql(sql)
     result = http_get(return_url.format(apply_id=1), token=admin_token)
@@ -154,8 +155,8 @@ def test_admin_approval_apply_successful(admin_token, empty_device_apply_record,
     """
     empty_device_apply_record(1, 1)
     sql = """
-            INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
-            """
+    INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    """
     execute_sql(sql)
     data = {"approval": 1, "reason": "admin审批apply记录，通过"}
     result = http_post(audit_url.format(apply_id=1), data=data, token=admin_token)
@@ -173,8 +174,8 @@ def test_admin_not_approval_apply_successful(admin_token, empty_device_apply_rec
     """
     empty_device_apply_record(1, 1)
     sql = """
-                INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
-                """
+    INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    """
     execute_sql(sql)
     data = {"approval": 0, "reason": "admin审批apply记录，不通过"}
     result = http_post(audit_url.format(apply_id=1), data=data, token=admin_token)
@@ -192,7 +193,7 @@ def test_admin_approval_return_successful(admin_token, empty_device_apply_record
     """
     empty_device_apply_record(1, 1)
     sql = """
-    INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 4, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 4, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
     """
     execute_sql(sql)
     data = {"approval": 1, "reason": "admin审批return记录，通过"}
@@ -211,8 +212,8 @@ def test_admin_not_approval_return_successful(admin_token, empty_device_apply_re
     """
     empty_device_apply_record(1, 1)
     sql = """
-        INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 4, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
-        """
+    INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 4, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    """
     execute_sql(sql)
     data = {"approval": 0, "reason": "admin审批return记录，不通过"}
     result = http_post(audit_url.format(apply_id=1), data=data, token=admin_token)
@@ -230,8 +231,8 @@ def test_admin_approval_return_failed(admin_token, empty_device_apply_record, ex
     """
     empty_device_apply_record(1, 1)
     sql = """
-            INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
-            """
+    INSERT INTO device_apply_record VALUES (1, 1, 1, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 3, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    """
     execute_sql(sql)
     data = {"approval": 0, "reason": "admin审批return记录，不通过"}
     result = http_post(audit_url.format(apply_id=1), data=data, token=admin_token)
@@ -248,7 +249,7 @@ def test_owner_approval_apply_successful(test1_token, empty_device_apply_record,
     :return:
     """
     empty_device_apply_record(1, 1)
-    sql = """INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 4, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    sql = """INSERT INTO device_apply_record VALUES (1, 4, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
     """
     execute_sql(sql)
     data = {"approval": 1, "reason": "owner审批apply记录，通过"}
@@ -266,7 +267,7 @@ def test_owner_approval_apply_failed(test1_token, empty_device_apply_record, exe
     :return:
     """
     empty_device_apply_record(1, 1)
-    sql = """INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 1, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    sql = """INSERT INTO device_apply_record VALUES (1, 1, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
     """
     execute_sql(sql)
     data = {"approval": 1, "reason": "owner审批apply记录，失败"}
@@ -284,7 +285,7 @@ def test_cancel_apply_successful(test1_token, empty_device_apply_record, execute
     :return:
     """
     empty_device_apply_record(1, 1)
-    sql = """INSERT INTO "device_apply_record"("id", "device_id", "applicant_id", "start_time", "end_time", "application_desc", "status", "apply_auditor_id", "return_auditor_id", "apply_audit_reason", "return_audit_reason", "notify_status", "notify_count", "create_time", "update_time") VALUES (1, 4, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
+    sql = """INSERT INTO device_apply_record VALUES (1, 4, 2, '2019-10-15 09:28:55', '2019-10-30 00:55:55', '测试需要', 1, NULL, NULL, NULL, NULL, 0, 0, '2019-10-15 16:16:48.399755', '2019-10-15 16:16:48.399755');
         """
     execute_sql(sql)
     result = http_get(cancel_url.format(apply_id=1), token=test1_token)

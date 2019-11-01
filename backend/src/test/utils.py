@@ -12,12 +12,13 @@ import requests
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from config import DevConfig
+
 HOST = "http://127.0.0.1:5000/api/"
-db_file = str(Path(__file__).parent.parent.joinpath("dev.db"))
 
 
 def get_db_session():
-    engine = create_engine('sqlite:///' + db_file)
+    engine = create_engine(DevConfig.SQLALCHEMY_DATABASE_URI)
     Session = sessionmaker(bind=engine)
     return Session()
 

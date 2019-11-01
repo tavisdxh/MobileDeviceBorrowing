@@ -28,13 +28,19 @@ class Config:
     SECRET_KEY = "Mobile Device Borrowing by Tavis D"
     # database
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # apscheduler
-    SCHEDULER_JOBSTORES = {
-        'default': RedisJobStore()
-    }
+    DB_HOST = os.environ.get('DB_HOST') or '127.0.0.1'
+    DB_PORT = os.environ.get('DB_PORT') or '3306'
+    DB_USER = os.environ.get('DB_USER') or 'root'
+    DB_PASSWORD = os.environ.get('DB_PASSWORD') or '123456'
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/mobile_device_borrowing?charset=utf8mb4".format(
+        DB_USER=DB_USER, DB_PASSWORD=DB_PASSWORD, DB_HOST=DB_HOST, DB_PORT=DB_PORT)
     # redis
     REDIS_HOST = os.environ.get('REDIS_HOST') or '127.0.0.1'
     REDIS_URL = "redis://{host}:6379/0".format(host=REDIS_HOST)
+    # apscheduler
+    SCHEDULER_JOBSTORES = {
+        'default': RedisJobStore(host=REDIS_HOST)
+    }
     # jwt
     JWT_SECRET_KEY = 'Mobile Device Borrowing by Tavis D'
     JWT_ACCESS_TOKEN_EXPIRES = 900  # 900秒=15min * 60
@@ -51,8 +57,6 @@ class Config:
 class DevConfig(Config):
     DEBUG = True
     LOG_LEVEL = logging.DEBUG
-    # SQLALCHEMY_ECHO = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + str(Path(__file__).parent.joinpath("dev.db"))
 
     @classmethod
     def init_app(cls, app):
@@ -60,13 +64,8 @@ class DevConfig(Config):
         set_log(app, cls.LOG_LEVEL)
 
 
-class ProConfig(Config):
+class ProdConfig(Config):
     LOG_LEVEL = logging.INFO
-    DB_HOST = os.environ.get('DB_HOST') or '127.0.0.1'
-    DB_USER = os.environ.get('DB_USER') or 'root'
-    DB_PASSWORD = os.environ.get('DB_PASSWORD') or '123456'
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{user}:{password}@{host}/mobile_device_borrowing?charset=utf8mb4".format(
-        user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
 
     @classmethod
     def init_app(cls, app):
@@ -74,4 +73,4 @@ class ProConfig(Config):
         set_log(app, cls.LOG_LEVEL)
 
 
-config = {'dev': DevConfig, 'pro': ProConfig, 'default': DevConfig}
+config = {'dev': DevConfig, 'prod': ProdConfig, 'default': DevConfig}

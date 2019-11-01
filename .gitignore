@@ -3,8 +3,11 @@
 
 *.pyc
 
-src/backend/logs/
-src/backend/migrations
+.vscode/*
+*.code-workspace
 
-src/backend/Pipfile.lock
 
+backend/src/Pipfile.lock
+backend/src/logs/
+backend/src/migrations/
+backend/docker_env/

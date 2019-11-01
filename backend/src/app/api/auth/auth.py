@@ -58,8 +58,8 @@ def register():
                             password=request.json.get("password"),
                             realname=request.json.get("realname"),
                             email=request.json.get("email"))
-            role = Role.query.filter_by(name="normal").first()
-            new_user.roles.append(role)
+            # role = Role.query.filter_by(name="normal").first()
+            # new_user.roles.append(role)
             db.session.add(new_user)
             db.session.commit()
             new_user_dump = user_schema.dump(new_user)

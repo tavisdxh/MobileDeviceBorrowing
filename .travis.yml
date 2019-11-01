@@ -6,12 +6,15 @@ python:
   - '3.5'
 services:
   - redis-server
+  - mysql
 env:
   - FLASK_ENV=dev
-before_install: cd src/backend
+  - DB_PASSWORD=
+before_install:
+  - mysql -u root --password="" < mysql/docker-entrypoint-initdb.d/01_create_db.sql
+  - mysql -u root --password="" < mysql/docker-entrypoint-initdb.d/02_table_structure.sql
 install:
-  - pip install pipenv
-  - pipenv install
+  - pip install -r requirements.txt
 script:
   - nohup python manage.py runserver &
   - pytest test  -sv

@@ -5,13 +5,25 @@ Desc：
 Author：TavisD 
 Time：2019-09-13 10:05
 """
-from test.utils import HOST, http_get, http_post
+import pytest
+
+from test.utils import HOST, http_get, http_post, get_db_session
 
 get_device_url = HOST + "device/get_device/{device_id}"
 add_device_url = HOST + "device/add_device"
 update_device_url = HOST + "device/update_device/{device_id}"
 get_devices_url = HOST + "device/get_devices"
 disable_device_url = HOST + "device/disable_device/{device_id}"
+
+
+@pytest.fixture
+def empty_device():
+    def _empty(id):
+        session = get_db_session()
+        session.execute("delete from device where id={id}".format(id=id))
+        session.commit()
+
+    return _empty
 
 
 def test_get_device_successful(admin_token):
@@ -150,7 +162,7 @@ def test_get_devices_successful_by_filter(admin_token):
     params = {"page": 1, "per_page": 20, "brand": "Apple", "model": "apple"}
     result = http_get(get_devices_url, params=params, token=admin_token)
     assert result.json()['code'] == 0
-    assert result.json()['total'] == 2
+    assert len(result.json()['data']) > 0
 
 
 def test_get_devices_successful_empty(admin_token):
@@ -165,15 +177,17 @@ def test_get_devices_successful_empty(admin_token):
     assert result.json()['total'] == 0
 
 
-def test_admin_disable_device_successful(admin_token, execute_sql):
+def test_admin_disable_device_successful(admin_token, execute_sql, empty_device):
     """
     admin禁用设备成功
     :param admin_token:
     :param execute_sql:
+    :param empty_device:
     :return:
     """
+    empty_device(10)
     sql = """
-    INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (10, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+    INSERT INTO device VALUES (10, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51');
     """
     execute_sql(sql)
     data = {"disable": "true"}
@@ -182,15 +196,17 @@ def test_admin_disable_device_successful(admin_token, execute_sql):
     assert result.json()['msg'] == "ok"
 
 
-def test_common_user_disable_device_successful(test1_token, execute_sql):
+def test_common_user_disable_device_successful(test1_token, execute_sql, empty_device):
     """
     普通用户禁用自己的设备成功
     :param test1_token:
     :param execute_sql:
+    :param empty_device:
     :return:
     """
+    empty_device(11)
     sql = """
-    INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (11, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+    INSERT INTO device VALUES (11, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51');
     """
     execute_sql(sql)
     data = {"disable": "true"}
@@ -199,15 +215,17 @@ def test_common_user_disable_device_successful(test1_token, execute_sql):
     assert result.json()['msg'] == "ok"
 
 
-def test_common_user_disable_device_failed(test1_token, execute_sql):
+def test_common_user_disable_device_failed(test1_token, execute_sql, empty_device):
     """
     普通用户禁用他人设备失败
     :param test1_token:
     :param execute_sql:
+    :param empty_device:
     :return:
     """
+    empty_device(12)
     sql = """
-        INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (12, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 3, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+        INSERT INTO device VALUES (12, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 1, 3, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51');
         """
     execute_sql(sql)
     data = {"disable": "true"}
@@ -216,15 +234,17 @@ def test_common_user_disable_device_failed(test1_token, execute_sql):
     assert result.json()['msg'] == "禁用失败"
 
 
-def test_admin_enable_device_successful(admin_token, execute_sql):
+def test_admin_enable_device_successful(admin_token, execute_sql, empty_device):
     """
     admin启用设备成功
     :param admin_token:
     :param execute_sql:
+    :param empty_device:
     :return:
     """
+    empty_device(13)
     sql = """
-        INSERT INTO "device"("id", "type", "brand", "model", "os", "os_version", "resolution", "asset_no", "root", "location", "status", "owner_id", "current_user_id", "desc", "create_time", "update_time") VALUES (13, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 0, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51.058186');
+        INSERT INTO device VALUES (13, 'phone', 'Apple', 'Apple iPhone XR (A2108) 128GB 黑色 移动联通电信4G手机 双卡双待', 'android', '12.1.4', '1792×828', '20150731-0134', 'no', '北京', 0, 2, 3, '这个是补充信息', '2019-09-13 09:28:55', '2019-10-17 16:34:51');
         """
     execute_sql(sql)
     data = {"disable": "false"}
