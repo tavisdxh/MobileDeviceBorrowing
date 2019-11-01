@@ -8,10 +8,11 @@ services:
   - redis-server
   - mysql
 env:
-  - FLASK_ENV=dev DB_PASSWORD=
+  - FLASK_ENV=dev
 before_install:
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('123456') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
   - mysql -e 'CREATE DATABASE IF NOT EXISTS `mobile_device_borrowing` default character SET utf8mb4 ;'
-  - mysql -u root  < backend/mysql/docker-entrypoint-initdb.d/02_table_structure.sql
+  - mysql -u root -p123456 < backend/mysql/docker-entrypoint-initdb.d/02_table_structure.sql
   - cd backend/src
 install:
   - pip install -r requirements.txt
