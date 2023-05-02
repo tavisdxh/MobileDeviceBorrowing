@@ -1,5 +1,5 @@
 concurrent-log-handler==0.9.16
-Flask==1.1.1
+Flask==2.2.5
 Flask-APScheduler==1.11.0
 Flask-JWT-Extended==3.24.0
 Flask-Migrate==2.5.2
